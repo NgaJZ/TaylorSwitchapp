@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">TaylorSwiftApplication</string>
+    <string name="trade">Trade</string>
+    <string name="bid">Bid</string>
+    <string name="bid_history">Bid History</string>
+    <string name="title">Title</string>
+    <string name="your_bid">Your Bid : %s</string>
+    <string name="highest">Highest  : %s</string>
+    <string name="live">Live</string>
+    <string name="back_button">Back</string>
+</resources>
