@@ -3,6 +3,7 @@ package com.example.taylorswitch.util
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
@@ -20,11 +21,11 @@ class StorageUtil{
 
         private val db = Firebase.firestore
 
-        val postReference = db.collection("auction")
 
 
 
-        fun uploadToStorage(uri: Uri, context: Context, type: String, postId: String) {
+
+        fun uploadToStorage(uri: Uri, context: Context, type: String, postReference: CollectionReference, postId: String) {
             val storage = Firebase.storage
 
             // Create a storage reference from our app

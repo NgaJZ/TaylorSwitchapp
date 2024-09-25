@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
-    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 //    id("com.android.application")
 //    id("org.jetbrains.kotlin.android")
 //    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
@@ -83,9 +83,9 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation(libs.firebase.analytics)
 
-//    implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
-//    ksp("androidtx.room:room-compiler:${rootProject.extra["room_version"]}")
-//    implementation("androidx.room:room-ktx${rootProject.extra["room_version"]}")
+    implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
+    ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
+    implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
 
     implementation(libs.google.firebase.firestore)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5")
@@ -98,9 +98,9 @@ dependencies {
 //    implementation("com.google.dagger:dagger-compiler:2.51.1")
 //    ksp("com.google.dagger:dagger-compiler:2.51.1")
 //
-    implementation("androidx.room:room-runtime:$2.6.1")
-    annotationProcessor("androidx.room:room-compiler:$2.6.")
-    ksp("androidx.room:room-compiler:$2.6.1")
+//    implementation("androidx.room:room-runtime:$2.6.1")
+////    annotationProcessor("androidx.room:room-compiler:$2.6.1")
+//    ksp("androidx.room:room-compiler:$2.6.1")
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

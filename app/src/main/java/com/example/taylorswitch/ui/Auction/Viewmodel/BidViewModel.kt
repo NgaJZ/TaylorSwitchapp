@@ -275,6 +275,7 @@ class BidViewModel : ViewModel() {
                                         uri = it,
                                         context = context,
                                         type = "image",
+                                        postReference = db.collection("auction"),
                                         postId = newAuctionId.toString()
                                     )
                                 }

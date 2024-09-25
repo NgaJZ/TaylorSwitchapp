@@ -432,8 +432,7 @@ fun PostScreen(
                             modifier = Modifier
                                 .width(149.dp)
                                 .height(194.dp),
-                            colors = IconButtonColors(Color(30,17,56),Color(30,17,56),Color(30,17,56),Color(30,17,56)),
-                            onClick = {
+                           onClick = {
                                 multiplePhotoPicker.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                 )
