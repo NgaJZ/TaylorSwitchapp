@@ -15,9 +15,13 @@ data class Bidder(
 )
 
 data class postRec(
+    val id: Long = 0L,
     val name:String = "",
-    val currentBid: String = "",
-    val timeLeft: String = ""
+    val highestBid: Long = 0L,
+    val endDate: String = "",
+    val endTime: String = "",
+    val timeLeft: String = "",
+    val live: Boolean = false
 
 )
 
@@ -27,8 +31,8 @@ data class BidUiState(
     val timeLeft: String = "",
     val minCallUp: Double = 0.0,
     val startBidAmount: Double = 0.0,
-    val title: String = " ",
-    val description: String = " ",
+    val title: String = "",
+    val description: String = "",
     val poster: String = " ",
     val live: Boolean = false,
     val success: Boolean = false,
@@ -37,5 +41,6 @@ data class BidUiState(
     val highestBidder: Bidder = Bidder("",0.0),
     val historyBidder: List<Bidder> = emptyList(),
     val stage: ListingStage = ListingStage.Live,
-    val postRecArr: List<postRec> = emptyList()
+    val postRecArr: List<postRec> = emptyList(),
+    val imageRef: List<String> = emptyList()
 )

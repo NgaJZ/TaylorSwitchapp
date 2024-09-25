@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    id("com.google.devtools.ksp")
 //    id("com.android.application")
 //    id("org.jetbrains.kotlin.android")
 //    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
@@ -70,6 +71,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.database)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -88,7 +90,19 @@ dependencies {
     implementation(libs.google.firebase.firestore)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.5")
+    implementation("io.coil-kt:coil-compose:2.3.0")
+    implementation("com.squareup.picasso:picasso:2.8")
+    implementation ("com.google.accompanist:accompanist-pager:0.26.1-alpha")
+    implementation ("androidx.compose.foundation:foundation:1.3.1")
+
+//    implementation("com.google.dagger:dagger-compiler:2.51.1")
+//    ksp("com.google.dagger:dagger-compiler:2.51.1")
+//
+    implementation("androidx.room:room-runtime:$2.6.1")
+    annotationProcessor("androidx.room:room-compiler:$2.6.")
+    ksp("androidx.room:room-compiler:$2.6.1")
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
 }

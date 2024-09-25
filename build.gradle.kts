@@ -9,6 +9,8 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
+    id("com.google.devtools.ksp") version "1.9.21-1.0.15" apply false
+
 //    alias(libs.plugins.google.devtools.ksp) apply false
 //    id("com.android.application") version "8.6.0" apply false
 //    id("com.android.library") version "8.6.0" apply false

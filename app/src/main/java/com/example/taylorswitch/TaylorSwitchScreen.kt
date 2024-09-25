@@ -16,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -24,31 +25,31 @@ import androidx.navigation.compose.rememberNavController
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
-import com.example.taylorswitch.ui.Auction.Viewmodel.AuctionViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.BidHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.BidSession
+
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostScreen
 import kotlinx.coroutines.launch
 
-enum class TaylorSwitchScreen(){
+enum class TaylorSwitchScreen() {
     MainPage,
     ViewBid,
     PostBid,
-    BidHistory
+    BidHistory,
+    Test
 }
-
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaylorSwitchApp(
-//    viewModel: TaylorViewModel = viewModel(),
     viewModel: BidViewModel = viewModel(),
-    auctionViewModel: AuctionViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext.current
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
@@ -83,11 +84,11 @@ fun TaylorSwitchApp(
                                 if (isClosed) open() else close()
                             }
                         }
-                        navController.navigate(TaylorSwitchScreen.PostBid.name)}
+                        navController.navigate(TaylorSwitchScreen.PostBid.name)
+                    }
                 )
                 NavigationDrawerItem(
-//                    icon = { Icon(item, contentDescription = null) },
-                    label = { Text("aaa") },
+                    label = { Text("main") },
                     selected = false,
                     onClick = {
                         scope.launch {
@@ -95,11 +96,21 @@ fun TaylorSwitchApp(
                                 if (isClosed) open() else close()
                             }
                         }
-                        navController.navigate(TaylorSwitchScreen.BidHistory.name)
-//                        scope.launch { drawerState.close() }
-//                        selectedItem.value = item
+                        navController.navigate(TaylorSwitchScreen.MainPage.name)
                     }
-//                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("test") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.Test.name)
+                    }
                 )
                 // ...other drawer items
             }
@@ -110,11 +121,13 @@ fun TaylorSwitchApp(
                 TaylorSwitchAppBar(
                     canNavigateBack = false,
                     navigateUp = { /* TODO: implement back navigation */ },
-                    onNavigationIconClick = {scope.launch {
-                        drawerState.apply {
-                            if (isClosed) open() else close()
+                    onNavigationIconClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
                         }
-                    }}
+                    }
                 )
             }
         )
@@ -122,10 +135,10 @@ fun TaylorSwitchApp(
             val uiState by viewModel.uiState.collectAsState()
             NavHost(
                 navController = navController,
-                startDestination = TaylorSwitchScreen.MainPage.name,
+                startDestination = TaylorSwitchScreen.PostBid.name,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable(TaylorSwitchScreen.MainPage.name){
+                composable(TaylorSwitchScreen.MainPage.name) {
                     HomeScreen(
                         viewModel = viewModel,
                         navController = navController
@@ -133,61 +146,39 @@ fun TaylorSwitchApp(
                 }
                 //Bid
                 composable(route = TaylorSwitchScreen.PostBid.name) {
-//                BidHistoryScreen()
-//                BidSession()
-//                    HomeScreen(
-//                        viewModel = auctionViewModel
-//                    )
                     PostScreen(
-//                    title = viewModel.title,
-//                    onTitleChanged={
-//                        viewModel.updateListingTitle(it)
-//                    },
-//                    description = viewModel.description,
-//                    onDescriptionChanged = {
-//                        viewModel.updateListingDescription(it)
-//                    },
-//                    startBidAmount = viewModel.startAmount,
-//                    onStartBidAmountChanged = {
-//                        viewModel.updateStartBidAmount(it)
-//                    },
-//                    minBidAmount = viewModel.minAmount,
-//                    onMinBidChanged = {
-//                        viewModel.updateMinBidAmount(it)
-//                    },
                         onPostButtonClicked = {
-                            viewModel.postBid()
-//                            navController.navigate(TaylorSwitchScreen.ViewBid.name)
+                            viewModel.postBid(context = context)
                         },
                         bidViewModel = viewModel
                     )
-//                testScreen()
                 }
-                //Flavor
 
-                composable(TaylorSwitchScreen.ViewBid.name+"/{auctionId}") {backStackEntry ->
+                composable(TaylorSwitchScreen.ViewBid.name + "/{auctionId}") { backStackEntry ->
                     val auctionId = backStackEntry.arguments?.getString("auctionId")
-//                    BidSessionScreen(auctionId = auctionId)
                     BidSession(
-                        auctionId=auctionId,
+                        auctionId = auctionId,
                         bidUiState = uiState,
                         bidViewModel = viewModel
                     )
                 }
 
                 composable(TaylorSwitchScreen.BidHistory.name) {
+                    viewModel.getUserPostRefArray("0")
                     BidHistoryScreen(
                         bidViewModel = viewModel,
-                        list = uiState.postRecArr
+                        list = uiState.postRecArr,
+                        navController = navController
+
                     )
                 }
-
+                composable(TaylorSwitchScreen.Test.name) {
+                    MultiplePhotoPicker()
+                }
             }
         }
     }
 }
-
-
 
 
 @Preview(showSystemUi = false, showBackground = false)
