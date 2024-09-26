@@ -20,12 +20,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(viewModel: UserViewModel) {
+fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
 //    bidUiState: BidUiState,
 //    userViewModel: UserViewModel = viewModel()
     val uiState = viewModel.uiState
@@ -138,7 +139,7 @@ fun SignUpScreen(viewModel: UserViewModel) {
 
 
             Button(
-                onClick = { viewModel.onSignup() },
+                onClick = { viewModel.signUp(uiState.email, uiState.password) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (uiState.isLoading) {
@@ -154,8 +155,9 @@ fun SignUpScreen(viewModel: UserViewModel) {
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { /* Handle login navigation */ }) {
-                Text(text = "Already have an account? Log in")
+            // Navigate back to login
+            TextButton(onClick = { navController.popBackStack() }) {
+                Text("Already have an account? Log in")
             }
         }
     }

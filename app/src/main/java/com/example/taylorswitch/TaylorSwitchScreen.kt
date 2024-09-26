@@ -31,9 +31,15 @@ import com.example.taylorswitch.ui.Auction.UiScreen.BidSession
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostScreen
+import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
+import com.example.taylorswitch.ui.user.login.LoginScreen
+import com.example.taylorswitch.ui.user.signup.SignUpScreen
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
+    LoginPage,
+    SignUpPage,
     MainPage,
     ViewBid,
     PostBid,
@@ -46,6 +52,8 @@ enum class TaylorSwitchScreen() {
 @Composable
 fun TaylorSwitchApp(
     viewModel: BidViewModel = viewModel(),
+    userLoginViewModel: UserLoginViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -112,7 +120,19 @@ fun TaylorSwitchApp(
                         navController.navigate(TaylorSwitchScreen.Test.name)
                     }
                 )
-                // ...other drawer items
+
+                NavigationDrawerItem(
+                    label = { Text("login") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.LoginPage.name)
+                    }
+                )                // ...other drawer items
             }
         }
     ) {
@@ -174,6 +194,25 @@ fun TaylorSwitchApp(
                 }
                 composable(TaylorSwitchScreen.Test.name) {
                     MultiplePhotoPicker()
+                }
+                composable(TaylorSwitchScreen.LoginPage.name){
+                    LoginScreen(
+                        viewModel =  userLoginViewModel,
+                        navController = navController,
+                        onSignUpClick = {
+                            navController.navigate(TaylorSwitchScreen.SignUpPage.name)
+                        }
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                    )
+                }
+                composable(TaylorSwitchScreen.SignUpPage.name){
+                    SignUpScreen(
+                        viewModel =  userViewModel,
+                        navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                    )
                 }
             }
         }

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,15 +21,42 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
+import com.example.taylorswitch.ui.user.UserViewmodel.LoginNavigation
+import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
 @Composable
-fun LoginScreen() {
-    var email by remember { mutableStateOf("helloworld@gmail.com") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisibility by remember { mutableStateOf(false) }
+fun LoginScreen(
+    viewModel: UserLoginViewModel,
+    navController: NavController,
+    onSignUpClick: () -> Unit
+//    onForgotPasswordClick: () -> Unit,  // Function to handle "Forgot Password" click
+             // Function to handle "Sign Up" navigation
+) {
+
+    val uiState = viewModel.uiState
+    val navigationEvent by viewModel.navigationEvent.observeAsState()
+
+    val loginState by viewModel.loginState.collectAsState()
+
+    // Monitor loginState and navigate to the next screen on success
+    LaunchedEffect(loginState) {
+        if (loginState is UserLoginViewModel.LoginState.Success) {
+            // Navigate to main page after successful login
+            navController.navigate(TaylorSwitchScreen.MainPage.name)
+        }
+    }
+
+    // Display an error message if login fails
+    if (loginState is UserLoginViewModel.LoginState.Error) {
+        val error = (loginState as UserLoginViewModel.LoginState.Error).message
+        Text(error, color = Color.Red)
+    }
+
 
     Scaffold { innerPadding ->
         Column(
@@ -45,55 +73,83 @@ fun LoginScreen() {
                 modifier = Modifier.align(Alignment.Start)
             )
             Spacer(modifier = Modifier.height(16.dp))
-
+            // Email input
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = uiState.email,
+                onValueChange = { viewModel.onEmailChanged(it) },
                 label = { Text("Email address") },
                 singleLine = true,
+                isError = uiState.emailError != null,
+                placeholder = { Text("example@gmail.com") },
                 trailingIcon = {
                     Icon(Icons.Default.CheckCircle, contentDescription = "Email Verified")
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth()
             )
+            if (uiState.emailError != null) {
+                Text(uiState.emailError, color = Color.Red)
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Password input
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = uiState.password,
+                onValueChange = { viewModel.onPasswordChanged(it) },
                 label = { Text("Password") },
-                singleLine = true,
-                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (uiState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                    IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
                         Icon(
-                            imageVector = if (passwordVisibility) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisibility) "Hide password" else "Show password"
+                            imageVector = if (uiState.isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "Toggle Password Visibility"
                         )
                     }
                 },
+                isError = uiState.passwordError != null,
+                placeholder = { Text("Enter your password") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth()
             )
+            if (uiState.passwordError != null) {
+                Text(uiState.passwordError, color = Color.Red)
+            }
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = { /* Handle forgot password */ }, modifier = Modifier.align(Alignment.End)) {
+
+            TextButton(onClick = { viewModel.onForgotPasswordClick() },
+                modifier = Modifier.align(Alignment.End)) {
                 Text(text = "Forgot password?")
             }
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Login button
             Button(
-                onClick = { /* Handle login */ },
-                modifier = Modifier.fillMaxWidth()
+                onClick = {viewModel.login(uiState.email, uiState.password) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading
             ) {
-                Text(text = "Log in", fontSize = 18.sp)
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp)
+                } else {
+                    Text("Log In")
+                }
+                //Text(text = "Log in", fontSize = 18.sp)
+            }
+            // Error message
+            if (uiState.errorMessage != null) {
+                Text(uiState.errorMessage, color = Color.Red)
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { /* Handle sign-up navigation */ }) {
+            TextButton(onClick = onSignUpClick) {
                 Text(text = "Don’t have an account? Sign up")
             }
         }
     }
+
 }
+

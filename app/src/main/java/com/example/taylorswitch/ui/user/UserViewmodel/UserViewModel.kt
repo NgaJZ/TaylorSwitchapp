@@ -1,5 +1,9 @@
 package com.example.taylorswitch.ui.user.UserViewmodel
 
+import android.content.ContentValues.TAG
+import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,53 +17,23 @@ import com.example.taylorswitch.data.UserUiState
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import com.example.taylorswitch.data.fireStore.model.Auction
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class UserViewModel : ViewModel(){
-
+    //private lateinit var auth: FirebaseAuth
     // State holder for the entire UI state
     var uiState by mutableStateOf(UserUiState())
         private set
+
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private val db = Firebase.firestore
-    // State holder for the entire UI state
 
+    private val _signupState = mutableStateOf<SignupState>(SignupState.Idle)
+    val signupState = _signupState
 
-//    // Form field states
-//    var email by mutableStateOf("")
-//        private set
-//    var username by mutableStateOf("")
-//        private set
-//    var password by mutableStateOf("")
-//        private set
-//    var confirmPassword by mutableStateOf("")
-//        private set
-//    var address by mutableStateOf("")
-//        private set
-
-//    // Visibility states for password fields
-//    var isPasswordVisible by mutableStateOf(false)
-//        private set
-//    var isConfirmPasswordVisible by mutableStateOf(false)
-//        private set
-//
-//    // Error messages for validation
-//    var emailError by mutableStateOf<String?>(null)
-//        private set
-//    var passwordError by mutableStateOf<String?>(null)
-//        private set
-//    var confirmPasswordError by mutableStateOf<String?>(null)
-//        private set
-//    var usernameError by mutableStateOf<String?>(null)
-//        private set
-//
-//    // Form submission state
-//    var isLoading by mutableStateOf(false)
-//        private set
-//    var signupSuccess by mutableStateOf(false)
-//        private set
-//    var errorMessage by mutableStateOf<String?>(null)
-//        private set
 
     // Function to update the email field
     fun onEmailChanged(newEmail: String) {
@@ -96,26 +70,21 @@ class UserViewModel : ViewModel(){
         uiState = uiState.copy(isConfirmPasswordVisible = !uiState.isConfirmPasswordVisible)
     }
 
-    // Function to validate the form fields
+
+    // Validate form before sign-up
     private fun validateForm(): Boolean {
         var isValid = true
         var emailError: String? = null
-        var usernameError: String? = null
         var passwordError: String? = null
         var confirmPasswordError: String? = null
 
-        // Email validation
+        // Validate email
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(uiState.email).matches()) {
-            emailError = "Invalid email address"
-            isValid = false
-        }
-        // Username validation
-        if (uiState.username.isBlank()) {
-            usernameError = "Username cannot be empty"
+            emailError = "Invalid email"
             isValid = false
         }
 
-        // Password validation
+        // Validate password
         if (uiState.password.length < 8) {
             passwordError = "Password must be at least 8 characters"
             isValid = false
@@ -123,22 +92,55 @@ class UserViewModel : ViewModel(){
 
         // Confirm password validation
         if (uiState.confirmPassword != uiState.password) {
-            confirmPasswordError = "Passwords do not match"
+            confirmPasswordError = "Passwords don't match"
             isValid = false
         }
 
-        // Update the UI state with error messages if any
+        // Update UI state with errors if needed
         uiState = uiState.copy(
             emailError = emailError,
-            usernameError = usernameError,
             passwordError = passwordError,
             confirmPasswordError = confirmPasswordError
         )
+
         return isValid
+    }
+
+    // Sign-up logic with Firebase Authentication
+    fun signUp(email: String, password: String) {
+        if (!validateForm()) return
+
+        _signupState.value = SignupState.Loading
+
+        viewModelScope.launch {
+            firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        // Add user to Firestore (optional)
+                        val user = hashMapOf(
+                            "email" to email
+                        )
+                        db.collection("user").document(email)
+                            .set(user)
+                            .addOnSuccessListener {
+                                Log.d("Firestore", "User added successfully!")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("Firestore", "Error adding user", e)
+                            }
+
+                        _signupState.value = SignupState.Success
+                    } else {
+                        // Handle error
+                        _signupState.value = SignupState.Error(task.exception?.message ?: "Sign-up failed")
+                    }
+                }
+        }
     }
 
     // Handle form submission
     fun onSignup() {
+
         if (!validateForm()) return
 
         viewModelScope.launch {
@@ -161,5 +163,12 @@ class UserViewModel : ViewModel(){
         if (uiState.email == "test@test.com") {
             throw Exception("User already exists")
         }
+    }
+
+    sealed class SignupState {
+        object Idle : SignupState()
+        object Loading : SignupState()
+        object Success : SignupState()
+        data class Error(val message: String) : SignupState()
     }
 }
