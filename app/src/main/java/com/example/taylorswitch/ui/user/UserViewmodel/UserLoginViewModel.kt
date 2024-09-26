@@ -112,6 +112,11 @@ class UserLoginViewModel : ViewModel() {
                 }
         }
     }
+    // Sign out function
+    fun signOut() {
+        firebaseAuth.signOut()
+        _loginState.value = LoginState.Idle // Reset the login state or handle navigation in UI
+    }
 
     // Handle login action
     fun onLogin() {
