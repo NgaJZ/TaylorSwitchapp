@@ -339,7 +339,7 @@ fun BidSessionPortrait(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.highestBidder.bidAmount.toString(),
+                        text = bidUiState.highestBid.toString(),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -384,15 +384,16 @@ fun BidSessionPortrait(
                         .width(80.dp),
                     value = bidViewModel.bidCallAmount,
                     onValueChange = { bidViewModel.updateBidCall(it) },
+
                     label = {
                         if (bidViewModel.isCallNotValid()) {
-                            Text("Error")
+                            Text("Error",
+                                color = Color(red = 255, green = 0, blue = 0))
                         } else {
                             Text("Bid")
                         }
 
                     }
-
 
                 )
                 IconButton(onClick = { bidViewModel.incBidCall() }) {
@@ -410,7 +411,7 @@ fun BidSessionPortrait(
                 ) {
                     Text(
 //                        modifier = Modifier.width(100.dp),
-                        text = auctionId.toString(),
+                        text = "Bid",
                         style = TextStyle(
                             fontSize = 13.sp,
                             lineHeight = 16.sp,
@@ -668,7 +669,7 @@ fun BidSessionLandscape(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.highestBidder.bidAmount.toString(),
+                        text = bidUiState.highestBid.toString(),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -715,7 +716,8 @@ fun BidSessionLandscape(
                     onValueChange = { bidViewModel.updateBidCall(it) },
                     label = {
                         if (bidViewModel.isCallNotValid()) {
-                            Text("Error")
+                            Text("Error",
+                            color = Color(red = 255, green = 0, blue = 0))
                         } else {
                             Text("Bid")
                         }
