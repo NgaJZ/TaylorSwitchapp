@@ -16,3 +16,14 @@ data class UserUiState(
     val signupSuccess: Boolean = false,
     val errorMessage: String? = null
 )
+
+data class UserLoginUiState(
+    val email: String = "",
+    val password: String = "",
+    val isPasswordVisible: Boolean = false,
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val isLoading: Boolean = false,
+    val loginSuccess: Boolean = false,
+    val errorMessage: String? = null
+)
