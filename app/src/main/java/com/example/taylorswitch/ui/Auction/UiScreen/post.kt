@@ -51,6 +51,7 @@ import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +71,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.data.BidUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
@@ -94,6 +96,11 @@ fun PostScreen(
     bidViewModel: BidViewModel = viewModel(),
     onPostButtonClicked: () -> Unit
 ) {
+
+    LaunchedEffect(Unit) {
+        bidViewModel.resetUiState()
+//        bidViewModel.resetViewModel()
+    }
 
     val bidUiState by bidViewModel.uiState.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
@@ -182,7 +189,7 @@ fun PostScreen(
                     .padding(10.dp)
                     .width(408.dp)
                     .height(60.dp),
-                value = bidViewModel.name,
+                value = bidUiState.title,
                 onValueChange = { bidViewModel.updateListingTitle(it) },
                 label = { Text("Listing Title") },
                 trailingIcon = {
@@ -200,7 +207,7 @@ fun PostScreen(
                     .padding(10.dp)
                     .width(408.dp)
                     .height(152.dp),
-                value = bidViewModel.description,
+                value = bidUiState.description,
                 onValueChange = { bidViewModel.updateListingDescription(it) },
                 label = { Text("Description") },
                 trailingIcon = {
@@ -224,7 +231,7 @@ fun PostScreen(
                         .padding(10.dp)
                         .height(60.dp)
                         .width(160.dp),
-                    value = bidViewModel.startAmount,
+                    value = bidUiState.startBidInput,
                     onValueChange = { bidViewModel.updateStartBidAmount(it) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     label = { Text("Start Bid") },
@@ -235,7 +242,7 @@ fun PostScreen(
                         .padding(10.dp)
                         .height(60.dp)
                         .width(160.dp),
-                    value = bidViewModel.minAmount,
+                    value = bidUiState.minBidInput,
                     onValueChange = { bidViewModel.updateMinBidAmount(it) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     label = { Text("Min Bid") }
@@ -247,7 +254,7 @@ fun PostScreen(
                     .padding(10.dp)
             ) {
                 OutlinedTextField(
-                    value = bidViewModel.endDate,
+                    value = bidUiState.endDate,
                     onValueChange = {},
                     label = { Text("End Date") },
                     readOnly = true,
@@ -272,7 +279,6 @@ fun PostScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-//                                .offset(y = 64.dp)
                                 .shadow(elevation = 4.dp)
                                 .background(MaterialTheme.colorScheme.surface)
                         ) {
@@ -308,7 +314,7 @@ fun PostScreen(
                     .padding(10.dp)
             ) {
                 OutlinedTextField(
-                    value = bidViewModel.endTime,
+                    value = bidUiState.endTime,
                     onValueChange = {},
                     label = { Text("End Time") },
                     readOnly = true,

@@ -1,8 +1,10 @@
 package com.example.taylorswitch.data.localDatabase
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity (tableName = "auctions")
+
+@Entity(tableName = "auctions")
 data class AuctionPostLocal (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
@@ -18,4 +20,4 @@ data class AuctionPostLocal (
     val imageUris: List<String>, // List of image URIs (local paths)
     val isUploaded: Boolean = false, // Track whether the auction is uploaded to Firestore
     val live: Boolean = false
-    )
+)

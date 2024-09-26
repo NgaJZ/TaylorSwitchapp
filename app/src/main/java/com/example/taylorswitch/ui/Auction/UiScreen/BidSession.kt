@@ -64,14 +64,11 @@ fun BidSession(
     bidUiState: BidUiState,
     bidViewModel: BidViewModel = viewModel()
 ) {
-//    bidViewModel.timeLeft = "Time's up!"
-    bidViewModel.getAuctionById("$auctionId")
-    val auction by bidViewModel.auction.collectAsStateWithLifecycle()
 
-//    val resources = LocalContext.current.resources
     var timeRemainingInMillis by remember { mutableStateOf(0L) }
 
     LaunchedEffect(Unit) {
+
         delay(2000L)
         // Calculate the initial time left
         timeRemainingInMillis =
@@ -205,20 +202,13 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 16.sp,
                             lineHeight = 24.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
                             fontWeight = FontWeight(400),
-//                            color = Color(0xFF1D1B20),
                             letterSpacing = 0.5.sp,
                         )
                     )
                 }
 
-
                 Button(
-//                    modifier = Modifier.background(
-//
-//                        shape = RoundedCornerShape(size = 100.dp)
-//                    ),
                     onClick = {},
                     enabled = true
                 ) {
@@ -254,9 +244,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
                             fontWeight = FontWeight(600),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
 
@@ -267,9 +255,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 12.sp,
                             lineHeight = 19.6.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
                             fontWeight = FontWeight(400),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
                     )
@@ -282,7 +268,6 @@ fun BidSessionPortrait(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
                             fontWeight = FontWeight(600),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
 
@@ -293,9 +278,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 12.sp,
                             lineHeight = 19.6.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
                             fontWeight = FontWeight(400),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
                     )
@@ -316,9 +299,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
                             fontWeight = FontWeight(600),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
 
@@ -329,9 +310,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 12.sp,
                             lineHeight = 19.6.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
                             fontWeight = FontWeight(400),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
                     )
@@ -339,16 +318,13 @@ fun BidSessionPortrait(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.highestBid.toString(),
+                        text = (bidUiState.highestBidder.bidAmount).toString(),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
                             fontWeight = FontWeight(600),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
-
                     )
                     Text(
                         modifier = Modifier.fillMaxWidth(),
@@ -357,7 +333,6 @@ fun BidSessionPortrait(
                             fontSize = 12.sp,
                             lineHeight = 19.6.sp,
                             fontWeight = FontWeight(400),
-//                            color = Color(0xFF322F35),
                             textAlign = TextAlign.Center,
                         )
                     )
@@ -403,30 +378,42 @@ fun BidSessionPortrait(
                     )
                 }
 
-                Button(
+                if(bidUiState.live){
+                    Button(
 //                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
-                    onClick = { bidViewModel.callBid(auctionId = auctionId.toString()) },
-                    shape = RoundedCornerShape(size = 8.dp),
-                    enabled = true
-                ) {
-                    Text(
-//                        modifier = Modifier.width(100.dp),
-                        text = "Bid",
-                        style = TextStyle(
-                            fontSize = 13.sp,
-                            lineHeight = 16.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
-                            fontWeight = FontWeight(800),
-//                            color = Color(0xFFF5F5F5)
+                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString()) },
+                        shape = RoundedCornerShape(size = 8.dp),
+                        enabled = true
+                    ) {
+                        Text(
+                            text = "Bid",
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                lineHeight = 16.sp,
+                                fontWeight = FontWeight(800)
+                            )
                         )
-                    )
+                    }
+                }else{
+                    Button(
+                        onClick = {
+                            bidViewModel.callBid(auctionId = auctionId.toString())
+                                  },
+                        shape = RoundedCornerShape(size = 8.dp),
+                        enabled = false
+                    ) {
+                        Text(
+                            text = "Bid",
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                lineHeight = 16.sp,
+                                fontWeight = FontWeight(800)
+                            )
+                        )
+                    }
                 }
-
-
             }
         }
-
-//Spacer(modifier = Modifier.height(5.dp))
     }
 }
 
@@ -732,6 +719,9 @@ fun BidSessionLandscape(
                         contentDescription = "Add Bid Amount"
                     )
                 }
+
+
+
 
                 Button(
 //                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),

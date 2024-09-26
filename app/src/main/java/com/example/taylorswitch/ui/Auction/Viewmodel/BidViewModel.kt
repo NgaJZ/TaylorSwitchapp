@@ -20,6 +20,7 @@ import com.example.taylorswitch.data.ListingStage
 import com.example.taylorswitch.data.fireStore.model.Auction
 import com.example.taylorswitch.data.localDatabase.AuctionPostLocal
 import com.example.taylorswitch.data.historyRec
+import com.example.taylorswitch.data.localDatabase.AuctionsRepository
 import com.example.taylorswitch.util.StorageUtil
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -67,6 +68,8 @@ class BidViewModel
     var minCallAmount by mutableStateOf("")
     var bidCallAmount by mutableStateOf("")
 
+    var liveAuction by mutableStateOf(false)
+
     var timeLeft by mutableStateOf("")
 
     private var _auctionList = MutableStateFlow<List<Auction>>(emptyList())
@@ -90,9 +93,9 @@ class BidViewModel
     }
 
 
-    data class AuctionUiState (
+    data class AuctionUiState(
         val id: Int = 0,
-        val name: String= "",
+        val name: String = "",
         val description: String = "",
         val basePrice: Double = 0.0,
         val minBid: Double = 0.0,
@@ -100,30 +103,40 @@ class BidViewModel
         val endTime: String = "",
         val minCall: Double = 0.0,
         val highestBidder: String = "",
-        val highestBid :Double = 0.0,
+        val highestBid: Double = 0.0,
         val imageUris: List<String> = emptyList(), // List of image URIs (local paths)
         val isUploaded: Boolean = false, // Track whether the auction is uploaded to Firestore
         val live: Boolean = false
     )
 
-    fun AuctionUiState.toAuctionPostLocal(): AuctionPostLocal = AuctionPostLocal(
-       id =id,
-        name = name,
-        description  = description,
-        basePrice = basePrice,
-        minBid = minBid,
-        endDate = endDate,
-        endTime = endTime,
-        minCall = minCall,
-        highestBidder = highestBidder,
-        highestBid = highestBid,
-        imageUris = imageUris,
-        isUploaded = isUploaded,
-        live = live
-    )
+//    fun resetViewModel(){
+//        name = ""
+//        description = ""
+//        startAmount = ""
+//        minAmount = ""
+//        poster = ""
+//        endDate = ""
+//        endTime = ""
+//    }
+
+//    fun AuctionUiState.toAuctionPostLocal(): AuctionPostLocal = AuctionPostLocal(
+//       id =id,
+//        name = name,
+//        description  = description,
+//        basePrice = basePrice,
+//        minBid = minBid,
+//        endDate = endDate,
+//        endTime = endTime,
+//        minCall = minCall,
+//        highestBidder = highestBidder,
+//        highestBid = highestBid,
+//        imageUris = imageUris,
+//        isUploaded = isUploaded,
+//        live = live
+//    )
 
 
-//    suspend fun saveAuction(){
+    //    suspend fun saveAuction(){
 //        auctionsRepository.insertAuction(auctionUiState.toAuctionPostLocal())
 //    }
     fun getAuctionList() {
@@ -154,11 +167,12 @@ class BidViewModel
             minAmount = (auctionData.minBid).toString()
             minCallAmount = (auctionData.minCall).toString()
             highest = (auctionData.highestBid)
-            highestBidder = Bidder(auctionData.highestBidder,auctionData.highestBid)
+            highestBidder = Bidder(auctionData.highestBidder, auctionData.highestBid)
             endDate = (auctionData.endDate)
             endTime = (auctionData.endTime)
             imageRef = auctionData.imageRef
-
+            bidCallAmount = auctionData.highestBid.toString()
+            liveAuction = auctionData.live
 //            highest = (auctionData.highest).toString()
 //            endTimeStamp = (auctionData.endTimestamp).toString()
         }
@@ -176,50 +190,93 @@ class BidViewModel
 //                endTimeStamp = endTimeStamp.toString(),
                 highestBid = highest,
                 minCall = highest + minBidAmount,
-                imageRef = imageRef
+                imageRef = imageRef,
+                highestBidder = highestBidder,
+                live = liveAuction
             )
 
         }
 
+//        minCallAmount = (highest+minBidAmount).toString()
     }
 
 
     fun updateListingTitle(ListingTitle: String) {
         name = ListingTitle
+        _uiState.update { currentState ->
+            currentState.copy(
+                title = name
+            )
+        }
     }
 
     fun updateListingDescription(ListingDescription: String) {
         description = ListingDescription
+        _uiState.update { currentState ->
+            currentState.copy(
+                description = description
+            )
+        }
     }
 
 
     fun updateStartBidAmount(startBidAmount: String) {
         startAmount = startBidAmount
+        _uiState.update { currentState ->
+            currentState.copy(
+                startBidInput = startAmount
+            )
+        }
     }
 
     fun updateMinBidAmount(minBidAmount: String) {
         minAmount = minBidAmount
+        _uiState.update { currentState ->
+            currentState.copy(
+                minBidInput = minAmount
+            )
+        }
     }
 
     fun updatePoster(posterName: String) {
         poster = posterName
+        _uiState.update { currentState ->
+            currentState.copy(
+                poster = poster
+            )
+        }
     }
 
     fun updateEndDate(endDateInput: String) {
         endDate = endDateInput
+        _uiState.update { currentState ->
+            currentState.copy(
+                endDate = endDate
+            )
+        }
     }
 
     fun updateEndTime(endTimeInput: String) {
         endTime = endTimeInput
+        _uiState.update { currentState ->
+            currentState.copy(
+                endTime = endTime
+            )
+        }
     }
 
     fun updateHighestBidder(name: String, amount: Double) {
         highestBidder = Bidder(name, amount)
+        _uiState.update{currentState ->
+            currentState.copy(
+                highestBidder = highestBidder
+            )
+        }
     }
 
     fun updateBidCall(amount: String) {
         val amountInput = amount.toDoubleOrNull() ?: 0.0
-        if (amountInput >= min + highestBidder.bidAmount) {
+        if (amountInput >= min + (highestBidder.bidAmount)) {
             bidCallAmount = amount
         }
     }
@@ -241,8 +298,8 @@ class BidViewModel
 
     fun isCallNotValid(): Boolean {
         val bidCall = bidCallAmount.toDoubleOrNull() ?: 0.0
-        val minCallAmount = minCallAmount.toDoubleOrNull() ?: 0.0
-        if (bidCall >= highest + minCallAmount) {
+        val minBid = minAmount.toDoubleOrNull() ?: 0.0
+        if (bidCall >= (highestBidder.bidAmount + minBid)) {
             return false
         }
         return true
@@ -253,18 +310,7 @@ class BidViewModel
         if (!isCallNotValid()) {
 
             updateBid(Bidder(name = bidder, bidAmount = bidCall), auctionId = auctionId)
-//            val bidder = hashMapOf(
-//                "name" to bidder,
-//                "callAmount" to bidCall
-//            )
-//            db.collection("auction").document(auction_id.toString()).collection("bidder").document("")
-//                .set(auction)
-//                .addOnSuccessListener {
-//                    Log.d("document", "CREATED")
-//                }
 
-
-//        }
         }
     }
 
@@ -457,8 +503,6 @@ class BidViewModel
 
     private fun updateBid(bidder: Bidder, auctionId: String) {
 
-        getAuctionById(auctionId)
-
         var live: Boolean = false
         db.collection("auction").document(auctionId).get()
             .addOnSuccessListener { documentSnapshot ->
@@ -470,11 +514,11 @@ class BidViewModel
         }
 
         if (live) {
-            val updatedBidderList = ArrayList(_uiState.value.historyBidder)
-            updatedBidderList.add(bidder)
+//            val updatedBidderList = ArrayList(_uiState.value.historyBidder)
+//            updatedBidderList.add(bidder)
             _uiState.update { currentState ->
                 currentState.copy(
-                    historyBidder = updatedBidderList,
+//                    historyBidder = updatedBidderList,
                     highestBidder = bidder
                 )
             }
@@ -500,10 +544,7 @@ class BidViewModel
                     val bidReference = db.collection("auction").document(auctionId)
                     val minCall = bidder.bidAmount + (minAmount.toDoubleOrNull() ?: 0.0)
                     bidReference
-//                    .collection("bidder")
-//                    .document(newBidId.toString())
                         .update("bidArray", FieldValue.arrayUnion(bidderR))
-
                         .addOnSuccessListener {
                             // Auction successfully stored
                             bidReference
@@ -517,31 +558,24 @@ class BidViewModel
                                 .addOnSuccessListener {
                                     userFirestorePath.document("userBid")
                                         .update("bidRef", FieldValue.arrayUnion(bidReference))
-//                                userFirestorePath.document("userBid")
-//                                    .update("BidRecord", FieldValue.arrayUnion(
-//                                        mapOf(
-//                                            bidReference to bidder.bidAmount
-//                                        )
-//                                    ))
-
                                 }
                             Log.d("document", "CREATED")
                         }
                 }
 
 
-//        val updatedBidderList = ArrayList(_uiState.value.historyBidder)
-//        updatedBidderList.add(bidder)
-//        _uiState.update{ currentState ->
-//            currentState.copy(
-//                historyBidder = updatedBidderList,
-//                highestBidder = bidder
-//            )
-//        }
-//    }
+        val updatedBidderList = ArrayList(_uiState.value.historyBidder)
+        updatedBidderList.add(bidder)
+        _uiState.update{ currentState ->
+            currentState.copy(
+                historyBidder = updatedBidderList,
+                highestBidder = bidder
+            )
+        }
+    }
         }
 //}
-    }
+
 
 
     // Function to calculate the time left
@@ -576,6 +610,13 @@ class BidViewModel
 //    }
 
     fun closeListing(_auction_id: String) {
+        liveAuction = false
+        _uiState.update { currentState->
+            currentState.copy(
+                live = liveAuction
+            )
+        }
+
         db.collection("auction").document(_auction_id)
             .update("live", false)
             .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully updated!") }
@@ -588,7 +629,11 @@ class BidViewModel
 
     }
 
-    fun getUserHistoryArray(userID: String = "0", document:String = "userPost", field:String = "postRef") {
+    fun getUserHistoryArray(
+        userID: String = "0",
+        document: String = "userPost",
+        field: String = "postRef"
+    ) {
         val postList = mutableListOf<historyRec>()
         // Fetch the document containing the references
         userFirestorePath.document(document)
@@ -620,8 +665,9 @@ class BidViewModel
                                                 endTime
                                             )
                                         ),
-                                        live = userSnapshot.getBoolean("live")?: false,
-                                        imageRef = userSnapshot.get("imageRef") as? List<String> ?: emptyList()
+                                        live = userSnapshot.getBoolean("live") ?: false,
+                                        imageRef = userSnapshot.get("imageRef") as? List<String>
+                                            ?: emptyList()
                                     )
 
                                     // Add postRec to the list
@@ -638,7 +684,7 @@ class BidViewModel
 
                         }
 
-                    }else{
+                    } else {
                         _uiState.update { currentState ->
                             currentState.copy(
                                 historyRecArr = emptyList()
@@ -688,7 +734,7 @@ class BidViewModel
     }
 
 
-    fun checkHighestOrNot(user: String = "", auctionId: String = "0"): Boolean{
+    fun checkHighestOrNot(user: String = "", auctionId: String = "0"): Boolean {
         getAuctionById(auctionId)
         return user == highestBidder.name
     }
