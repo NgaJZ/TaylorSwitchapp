@@ -11,5 +11,8 @@
     <string name="timeLeft">TimeLeft  : %s</string>
     <string name="live">Live</string>
     <string name="back_button">Back</string>
+    <string name="end">End</string>
+    <string name ="success">Success</string>
+    <string name="fail">Fail</string>
     <string name="signup">Sign Up</string>
 </resources>

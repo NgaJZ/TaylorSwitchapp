@@ -8,26 +8,24 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.taylorswitch.data.BidUiState
 import com.example.taylorswitch.data.Bidder
 import com.example.taylorswitch.data.ListingStage
 import com.example.taylorswitch.data.fireStore.model.Auction
-import com.example.taylorswitch.data.postRec
+import com.example.taylorswitch.data.localDatabase.AuctionPostLocal
+import com.example.taylorswitch.data.historyRec
 import com.example.taylorswitch.util.StorageUtil
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.getField
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
@@ -39,12 +37,13 @@ import kotlinx.coroutines.flow.update
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class BidViewModel : ViewModel() {
+class BidViewModel
+//    (private val auctionsRepository: AuctionsRepository)
+    : ViewModel() {
 
     private val _uiState = MutableStateFlow(BidUiState())
     val uiState: StateFlow<BidUiState> = _uiState.asStateFlow()
@@ -80,6 +79,8 @@ class BidViewModel : ViewModel() {
     //store image to firebase storage
     var imageUris by mutableStateOf<List<Uri>>(emptyList())
 
+    var auctionUiState by mutableStateOf(AuctionUiState())
+        private set
 
     val userFirestorePath = db.collection("user").document("0").collection("userBidRec")
 
@@ -88,6 +89,43 @@ class BidViewModel : ViewModel() {
         getAuctionList()
     }
 
+
+    data class AuctionUiState (
+        val id: Int = 0,
+        val name: String= "",
+        val description: String = "",
+        val basePrice: Double = 0.0,
+        val minBid: Double = 0.0,
+        val endDate: String = "",
+        val endTime: String = "",
+        val minCall: Double = 0.0,
+        val highestBidder: String = "",
+        val highestBid :Double = 0.0,
+        val imageUris: List<String> = emptyList(), // List of image URIs (local paths)
+        val isUploaded: Boolean = false, // Track whether the auction is uploaded to Firestore
+        val live: Boolean = false
+    )
+
+    fun AuctionUiState.toAuctionPostLocal(): AuctionPostLocal = AuctionPostLocal(
+       id =id,
+        name = name,
+        description  = description,
+        basePrice = basePrice,
+        minBid = minBid,
+        endDate = endDate,
+        endTime = endTime,
+        minCall = minCall,
+        highestBidder = highestBidder,
+        highestBid = highestBid,
+        imageUris = imageUris,
+        isUploaded = isUploaded,
+        live = live
+    )
+
+
+//    suspend fun saveAuction(){
+//        auctionsRepository.insertAuction(auctionUiState.toAuctionPostLocal())
+//    }
     fun getAuctionList() {
         db.collection("auction")
             .addSnapshotListener { value, error ->
@@ -115,9 +153,12 @@ class BidViewModel : ViewModel() {
             startAmount = (auctionData.basePrice).toString()
             minAmount = (auctionData.minBid).toString()
             minCallAmount = (auctionData.minCall).toString()
+            highest = (auctionData.highestBid)
+            highestBidder = Bidder(auctionData.highestBidder,auctionData.highestBid)
             endDate = (auctionData.endDate)
             endTime = (auctionData.endTime)
             imageRef = auctionData.imageRef
+
 //            highest = (auctionData.highest).toString()
 //            endTimeStamp = (auctionData.endTimestamp).toString()
         }
@@ -133,7 +174,7 @@ class BidViewModel : ViewModel() {
                 endDate = endDate,
                 endTime = endTime,
 //                endTimeStamp = endTimeStamp.toString(),
-                highestBid = startBidAmount,
+                highestBid = highest,
                 minCall = highest + minBidAmount,
                 imageRef = imageRef
             )
@@ -228,6 +269,7 @@ class BidViewModel : ViewModel() {
     }
 
     //    @RequiresApi(Build.VERSION_CODES.O)
+//    @SuppressLint("ServiceCast")
     fun postBid(context: Context) {
         val startBidAmount = startAmount.toDoubleOrNull() ?: 0.0
         val minBidAmount = minAmount.toDoubleOrNull() ?: 0.0
@@ -301,8 +343,6 @@ class BidViewModel : ViewModel() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-
-
     }
 
 
@@ -335,7 +375,7 @@ class BidViewModel : ViewModel() {
                 highestBidder = Bidder("", 0.0),
                 historyBidder = emptyList(),
                 stage = ListingStage.Live,
-                postRecArr = emptyList(),
+                historyRecArr = emptyList(),
                 imageRef = emptyList()
             )
         }
@@ -548,20 +588,19 @@ class BidViewModel : ViewModel() {
 
     }
 
-
-    fun getUserPostRefArray(userID: String = "0") {
-        val postList = mutableListOf<postRec>()
+    fun getUserHistoryArray(userID: String = "0", document:String = "userPost", field:String = "postRef") {
+        val postList = mutableListOf<historyRec>()
         // Fetch the document containing the references
-        userFirestorePath.document("userPost")
+        userFirestorePath.document(document)
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
                     // Get the array of document references
-                    val postRefArray = documentSnapshot.get("postRef") as? List<DocumentReference>
+                    val historyRefArray = documentSnapshot.get(field) as? List<DocumentReference>
 
                     // If the array is not null, iterate over it
-                    if (postRefArray != null) {
-                        for (ref in postRefArray) {
+                    if (historyRefArray != null) {
+                        for (ref in historyRefArray) {
                             // Dereference each post and fetch the data
                             ref.get().addOnSuccessListener { userSnapshot ->
                                 if (userSnapshot.exists()) {
@@ -569,8 +608,7 @@ class BidViewModel : ViewModel() {
                                     endDate = userSnapshot.getString("endDate") ?: ""
                                     endTime = userSnapshot.getString("endTime") ?: ""
 
-
-                                    val post = postRec(
+                                    val history = historyRec(
                                         id = userSnapshot.getLong("id") ?: 0L,
                                         name = userSnapshot.getString("name") ?: "",
                                         highestBid = userSnapshot.getLong("highestBid") ?: 0L,
@@ -581,14 +619,16 @@ class BidViewModel : ViewModel() {
                                                 endDate,
                                                 endTime
                                             )
-                                        )
+                                        ),
+                                        live = userSnapshot.getBoolean("live")?: false,
+                                        imageRef = userSnapshot.get("imageRef") as? List<String> ?: emptyList()
                                     )
 
                                     // Add postRec to the list
-                                    postList.add(post)
+                                    postList.add(history)
                                     _uiState.update { currentState ->
                                         currentState.copy(
-                                            postRecArr = postList
+                                            historyRecArr = postList
                                         )
                                     }
                                 }
@@ -601,7 +641,7 @@ class BidViewModel : ViewModel() {
                     }else{
                         _uiState.update { currentState ->
                             currentState.copy(
-                                postRecArr = emptyList()
+                                historyRecArr = emptyList()
                             )
                         }
                     }
@@ -647,6 +687,11 @@ class BidViewModel : ViewModel() {
         }
     }
 
+
+    fun checkHighestOrNot(user: String = "", auctionId: String = "0"): Boolean{
+        getAuctionById(auctionId)
+        return user == highestBidder.name
+    }
 
 }
 

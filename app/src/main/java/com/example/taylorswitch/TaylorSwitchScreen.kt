@@ -30,11 +30,13 @@ import com.example.taylorswitch.ui.Auction.UiScreen.BidSession
 
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
+import com.example.taylorswitch.ui.Auction.UiScreen.PostHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostScreen
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
+import com.example.taylorswitch.ui.theme.AppViewModelProvider
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
@@ -44,6 +46,7 @@ enum class TaylorSwitchScreen() {
     ViewBid,
     PostBid,
     BidHistory,
+    PostHistory,
     Test
 }
 
@@ -78,6 +81,21 @@ fun TaylorSwitchApp(
                             }
                         }
                         navController.navigate(TaylorSwitchScreen.BidHistory.name)
+
+                    }
+                )
+                NavigationDrawerItem(
+                    label = {
+                        Text(text = "Post History")
+                    },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.PostHistory.name)
 
                     }
                 )
@@ -155,7 +173,7 @@ fun TaylorSwitchApp(
             val uiState by viewModel.uiState.collectAsState()
             NavHost(
                 navController = navController,
-                startDestination = TaylorSwitchScreen.PostBid.name,
+                startDestination = TaylorSwitchScreen.Test.name,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(TaylorSwitchScreen.MainPage.name) {
@@ -183,11 +201,21 @@ fun TaylorSwitchApp(
                     )
                 }
 
+                composable(TaylorSwitchScreen.PostHistory.name) {
+
+                    viewModel.getUserHistoryArray("0", "userPost","postRef")
+                    PostHistoryScreen(
+                        bidViewModel = viewModel,
+                        list = uiState.historyRecArr,
+                        navController = navController
+
+                    )
+                }
                 composable(TaylorSwitchScreen.BidHistory.name) {
-                    viewModel.getUserPostRefArray("0")
+                    viewModel.getUserHistoryArray("0", "userBid","bidRef")
                     BidHistoryScreen(
                         bidViewModel = viewModel,
-                        list = uiState.postRecArr,
+                        list = uiState.historyRecArr,
                         navController = navController
 
                     )
