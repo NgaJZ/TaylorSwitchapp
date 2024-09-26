@@ -72,7 +72,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage.ktx)
-    implementation(libs.androidx.work.runtime.ktx)
+//    implementation(libs.androidx.work.runtime.ktx)
 //    implementation(libs.firebase.firestore.ktx)
 //    implementation(libs.androidx.animation.core.android)
 //    implementation(libs.androidx.animation.core.android)
