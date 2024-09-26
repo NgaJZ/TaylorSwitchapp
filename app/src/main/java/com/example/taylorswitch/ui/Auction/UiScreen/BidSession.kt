@@ -148,7 +148,6 @@ fun BidSessionPortrait(
                     }
                 }
 
-//
                 Column(
                     modifier = Modifier
                         .matchParentSize()
