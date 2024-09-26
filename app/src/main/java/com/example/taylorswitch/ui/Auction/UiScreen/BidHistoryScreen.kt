@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -34,6 +35,11 @@ import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 
 @Composable
 fun BidHistoryScreen(bidViewModel: BidViewModel, list: List<historyRec> = emptyList(), navController: NavHostController) {
+
+    LaunchedEffect(Unit) {
+        bidViewModel.getUserHistoryArray("0", "userBid","bidRef")
+    }
+
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),

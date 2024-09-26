@@ -164,6 +164,7 @@ fun TaylorSwitchApp(
                 }
                 //Bid
                 composable(route = TaylorSwitchScreen.PostBid.name) {
+//                    viewModel.resetUiState()
                     PostScreen(
                         onPostButtonClicked = {
                             viewModel.postBid(context = context)
@@ -174,7 +175,8 @@ fun TaylorSwitchApp(
 
                 composable(TaylorSwitchScreen.ViewBid.name + "/{auctionId}") { backStackEntry ->
                     val auctionId = backStackEntry.arguments?.getString("auctionId")
-                    BidSession(
+                    viewModel.getAuctionById("$auctionId")
+                     BidSession(
                         auctionId = auctionId,
                         bidUiState = uiState,
                         bidViewModel = viewModel
@@ -183,7 +185,7 @@ fun TaylorSwitchApp(
 
                 composable(TaylorSwitchScreen.PostHistory.name) {
 
-                    viewModel.getUserHistoryArray("0", "userPost","postRef")
+//                    viewModel.getUserHistoryArray("0", "userPost","postRef")
                     PostHistoryScreen(
                         bidViewModel = viewModel,
                         list = uiState.historyRecArr,
@@ -192,7 +194,7 @@ fun TaylorSwitchApp(
                     )
                 }
                 composable(TaylorSwitchScreen.BidHistory.name) {
-                    viewModel.getUserHistoryArray("0", "userBid","bidRef")
+//                    viewModel.getUserHistoryArray("0", "userBid","bidRef")
                     BidHistoryScreen(
                         bidViewModel = viewModel,
                         list = uiState.historyRecArr,
