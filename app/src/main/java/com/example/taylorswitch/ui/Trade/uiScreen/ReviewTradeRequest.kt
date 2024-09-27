@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
@@ -63,7 +64,7 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 fun ReviewTradeRequest(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel = viewModel()
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
@@ -92,28 +93,6 @@ fun ReviewTradeRequestPortrait(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.imageUris = it }
     )
-    Scaffold(
-        modifier = Modifier
-            .border(width = 8.dp, color = Color(0xFFCAC4D0))
-            .padding(8.dp)
-            .width(412.dp)
-            .height(826.dp)
-            .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(28.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("Review Trade", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back",
-                            tint = Color.Black
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         Column (
             modifier = Modifier
                 .fillMaxSize(),
@@ -288,8 +267,8 @@ fun ReviewTradeRequestPortrait(
             }
         }
     }
-}
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestLandscape(
@@ -302,28 +281,6 @@ fun ReviewTradeRequestLandscape(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.imageUris = it }
     )
-    Scaffold(
-        modifier = Modifier
-            .border(width = 8.dp, color = Color(0xFFCAC4D0))
-            .padding(8.dp)
-            .width(412.dp)
-            .height(826.dp)
-            .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(28.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("Review Trade", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back",
-                            tint = Color.Black
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         Row (
             modifier = Modifier
                 .fillMaxSize()
@@ -530,26 +487,10 @@ fun ReviewTradeRequestLandscape(
             }
         }
     }
-}
-//@Composable
-//fun ImageCardTR(imageUrl: String, modifier: Modifier) {
-//    Card(
-//        modifier = Modifier
-//            .width(380.dp)
-//            .fillMaxHeight(), // Keep height same for square images
-//        shape = RoundedCornerShape(8.dp)
-//    ) {
-//        // Coil to load image from URL
-//        Image(
-//            painter = rememberImagePainter(data = imageUrl),
-//            contentDescription = null,
-//            contentScale = ContentScale.Crop,
-//            modifier = Modifier.fillMaxSize()
-//        )
-//    }
-//}
+
+
 //@Preview
 //@Composable
 //fun TradeRequestPreview() {
-//    ReviewTradeRequestScreen()
+//    ReviewTradeRequest()
 //}

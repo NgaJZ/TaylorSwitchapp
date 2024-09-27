@@ -1,5 +1,6 @@
 package com.example.taylorswitch
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
+import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.ui.Auction.UiScreen.BidHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.BidSession
 
@@ -34,6 +36,13 @@ import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostScreen
+import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
+import com.example.taylorswitch.ui.Trade.uiScreen.HomepageScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.PostTradeItemScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.ReviewTradeRequest
+import com.example.taylorswitch.ui.Trade.uiScreen.TradeHistoryScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.TradeListScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.TradeRequestScreen
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
@@ -49,7 +58,13 @@ enum class TaylorSwitchScreen() {
     PostBid,
     BidHistory,
     PostHistory,
-    Test
+    Test,
+    TradeHomePage,
+    PostTrade,
+    TradeList,
+    RequestTrade,
+    ReviewTrade,
+    TradeHistory
 }
 
 
@@ -59,6 +74,7 @@ fun TaylorSwitchApp(
     viewModel: BidViewModel = viewModel(),
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
+    tradeViewModel: TradeViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -152,7 +168,80 @@ fun TaylorSwitchApp(
                         }
                         navController.navigate(TaylorSwitchScreen.LoginPage.name)
                     }
-                )                // ...other drawer items
+                )
+                NavigationDrawerItem(
+                    label = { Text("trade home page") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.TradeHomePage.name)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("post trade") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.PostTrade.name)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Trade listing") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.TradeList.name)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Request trade") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.RequestTrade.name)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Review trade request") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.ReviewTrade.name)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Trade history") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                    }
+                )
+                // ...other drawer items
             }
         }
     ) {
@@ -173,6 +262,7 @@ fun TaylorSwitchApp(
         )
         { innerPadding ->
             val uiState by viewModel.uiState.collectAsState()
+            val tUiState by tradeViewModel.tUiState.collectAsState()
             NavHost(
                 navController = navController,
                 startDestination = TaylorSwitchScreen.Test.name,
@@ -244,6 +334,52 @@ fun TaylorSwitchApp(
                         navController = navController,
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                    )
+                }
+                composable(TaylorSwitchScreen.TradeHomePage.name){
+                    HomepageScreen(
+                        tradeViewModel = tradeViewModel,
+                        navController = navController
+                    )
+                }
+                composable(TaylorSwitchScreen.PostTrade.name){
+                    PostTradeItemScreen(
+                        tradeViewModel = tradeViewModel,
+                        onPostButtonClicked = {
+                            tradeViewModel.postTrade(context = context)
+                        }
+                    )
+                }
+                composable(TaylorSwitchScreen.RequestTrade.name + "/{tradeId}") { backStackEntry ->
+                    val tradeId = backStackEntry.arguments?.getString("tradeId")
+                    TradeViewModel().getTradeById("$tradeId")
+                    TradeRequestScreen(
+                        tradeId = tradeId,
+                        tradeUiState = tUiState,
+                        tradeViewModel = tradeViewModel
+                    )
+                }
+                composable(TaylorSwitchScreen.ReviewTrade.name + "/{tradeId}") { backStackEntry ->
+                    val tradeId = backStackEntry.arguments?.getString("tradeId")
+                    TradeViewModel().getTradeById("$tradeId")
+                    ReviewTradeRequest(
+                        tradeId = tradeId,
+                        tradeUiState = tUiState,
+                        tradeViewModel = tradeViewModel
+                    )
+                }
+                composable(TaylorSwitchScreen.TradeList.name) {
+                    TradeListScreen(
+                        tradeViewModel = tradeViewModel,
+                        list = tUiState.tradeHistoryArr,
+                        navController = navController
+                    )
+                }
+                composable(TaylorSwitchScreen.TradeHistory.name) {
+                    TradeHistoryScreen(
+                        tradeViewModel = tradeViewModel,
+                        list = tUiState.tradeHistoryArr,
+                        navController = navController
                     )
                 }
             }

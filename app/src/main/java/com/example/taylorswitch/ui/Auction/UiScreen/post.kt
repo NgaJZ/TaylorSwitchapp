@@ -718,6 +718,7 @@ fun convertMillisToDate(millis: Long): String {
     return formatter.format(Date(millis))
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialWithDialogExample(
     onConfirm: (TimePickerState) -> Unit,
