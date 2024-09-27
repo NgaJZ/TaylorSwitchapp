@@ -225,7 +225,7 @@ fun TaylorSwitchApp(
                     )
                 }
                 composable(TaylorSwitchScreen.Test.name) {
-                    MultiplePhotoPicker()
+                    MultiplePhotoPicker(navController = navController, viewModel = userLoginViewModel)
                 }
                 composable(TaylorSwitchScreen.LoginPage.name){
                     LoginScreen(

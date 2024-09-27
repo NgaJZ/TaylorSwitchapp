@@ -27,3 +27,15 @@ data class UserLoginUiState(
     val loginSuccess: Boolean = false,
     val errorMessage: String? = null
 )
+
+data class UserProfileUiState(
+    val username: String = "",
+    val email: String = "",
+    val password: String = "",
+    val phoneNumber: String = "",
+    val dateOfBirth: String = "",
+    val address: String = "",
+    val errorMessage: String? = null,
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false
+)

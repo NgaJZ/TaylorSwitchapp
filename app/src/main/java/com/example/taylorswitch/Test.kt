@@ -65,14 +65,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import coil.compose.AsyncImage
+import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.util.StorageUtil
 
 @Composable
-fun MultiplePhotoPicker(){
+fun MultiplePhotoPicker(navController: NavController, viewModel: UserLoginViewModel){
     val context = LocalContext.current
 
     var imageUris by remember{
@@ -118,6 +120,16 @@ fun MultiplePhotoPicker(){
         }){
             Text("Upload")
         }
+    }
+    // Button to sign out
+    Button(
+        onClick = {
+            viewModel.signOut() // Call the sign-out function
+            navController.navigate(TaylorSwitchScreen.LoginPage.name) // Navigate back to login page
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text("Sign Out")
     }
 
 

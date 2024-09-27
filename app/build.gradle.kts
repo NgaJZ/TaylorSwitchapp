@@ -75,6 +75,9 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.androidx.foundation.android)
+    implementation(libs.androidx.foundation.android)
+    implementation(libs.androidx.foundation.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -112,5 +115,6 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-core:1.4.3")
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
+    implementation ("androidx.compose.material:material-icons-extended:1.0.5")
 
 }
