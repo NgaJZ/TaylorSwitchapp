@@ -158,257 +158,330 @@ fun TaylorSwitchApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier
-                    .width(300.dp)
-                    .fillMaxHeight()
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                Box(
+
+    if (!(currentDestination == TaylorSwitchScreen.LoginPage.name || currentDestination == TaylorSwitchScreen.SignUpPage.name)) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet(
                     modifier = Modifier
-                        .height(150.dp)
-                        .fillMaxWidth()
+                        .width(300.dp)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
                 ) {
-                    Column(
+                    Box(
                         modifier = Modifier
+                            .height(150.dp)
                             .fillMaxWidth()
-                            .padding(start = 10.dp),
-                        verticalArrangement = Arrangement.Center
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_launcher_foreground),
-                            contentDescription = "user"
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 10.dp),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.ic_launcher_foreground),
+                                contentDescription = "user"
+                            )
+                            Text(text = viewModel.username, fontSize = 15.sp)
+                        }
+                    }
+                    Column() {
+
+                        Text("Bid History", modifier = Modifier.padding(16.dp))
+                        HorizontalDivider()
+                        NavigationDrawerItem(
+                            label = {
+                                Text(text = "Bid Posting")
+                            },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.PostHistory.name)
+
+                            }
                         )
-                        Text(text = viewModel.username, fontSize = 15.sp)
+                        NavigationDrawerItem(
+                            label = {
+                                Text(text = "Bid Record")
+                            },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.BidHistory.name)
+
+                            }
+                        )
+                        NavigationDrawerItem(
+                            label = {
+                                Text(text = "Post Bid")
+                            },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.PostBid.name)
+                            }
+                        )
+                        NavigationDrawerItem(
+                            label = { Text("main") },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.MainPage.name)
+                            }
+                        )
+
+                        NavigationDrawerItem(
+                            label = { Text("test") },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.Test.name)
+                            }
+                        )
+
+                        NavigationDrawerItem(
+                            label = { Text("login") },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.LoginPage.name)
+                            }
+                        )                // ...other drawer items
+
+                        NavigationDrawerItem(
+                            label = { Text("Edit Profile") },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
+                            }
+                        )
                     }
                 }
-                Column() {
+            }
+        ) {
+            Scaffold(
+                topBar = {
+                    if (currentDestination == TaylorSwitchScreen.ViewBid.name + "/{auctionId}") {
+                        TaylorSwitchAppBar(
+                            title = "Bid",
+                            canNavigateBack = true,
+                            navigateUp = { navController.popBackStack() },
+                            onNavigationIconClick = {}
+                        )
+                    } else if (currentDestination == TaylorSwitchScreen.EditProfilePage.name) {
+                        TaylorSwitchAppBar(
+                            title = "Edit Profile",
+                            canNavigateBack = true,
+                            navigateUp = { navController.popBackStack() },
+                            onNavigationIconClick = {}
+                        )
+                    } else {
+                        TaylorSwitchAppBar(
+                            title = "Taylor Switch",
+                            canNavigateBack = false,
+                            navigateUp = { /* TODO: implement back navigation */ },
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }
+                },
+                bottomBar = {
+                    if (currentDestination == TaylorSwitchScreen.MainPage.name) {
+                        TaylorSwitchBottomBar(
+                            tabBarItems = tabBarItems,
+                            navController = navController
+                        )
+                    }
+                },
+                floatingActionButton = {
+                    if (currentDestination == TaylorSwitchScreen.MainPage.name) {
+                        MainUI()
+                    }
+                }
+            )
+            { innerPadding ->
+                val uiState by viewModel.uiState.collectAsState()
+                NavHost(
+                    navController = navController,
+                    startDestination = TaylorSwitchScreen.LoginPage.name,
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    composable(TaylorSwitchScreen.MainPage.name) {
+                        HomeScreen(
+                            viewModel = viewModel,
+                            navController = navController
+                        )
+                    }
+                    //Bid
+                    composable(route = TaylorSwitchScreen.PostBid.name) {
+//                    viewModel.resetUiState()
+                        PostScreen(
+                            onPostButtonClicked = {
+                                viewModel.postBid(context = context)
+                            },
+                            bidViewModel = viewModel
+                        )
+//                    fab()
+                    }
 
-                    Text("Bid History", modifier = Modifier.padding(16.dp))
-                    HorizontalDivider()
-                    NavigationDrawerItem(
-                        label = {
-                            Text(text = "Bid Posting")
-                        },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.PostHistory.name)
+                    composable(TaylorSwitchScreen.ViewBid.name + "/{auctionId}") { backStackEntry ->
+                        val auctionId = backStackEntry.arguments?.getString("auctionId")
+                        viewModel.getAuctionById("$auctionId")
+                        BidSession(
+                            auctionId = auctionId,
+                            bidUiState = uiState,
+                            bidViewModel = viewModel,
+                            navController = navController
+                        )
+                    }
 
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = {
-                            Text(text = "Bid Record")
-                        },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.BidHistory.name)
+                    composable(TaylorSwitchScreen.PostHistory.name) {
 
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = {
-                            Text(text = "Post Bid")
-                        },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.PostBid.name)
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("main") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.MainPage.name)
-                        }
-                    )
+                        viewModel.getUserHistoryArray("userPost", "postRef")
+                        PostHistoryScreen(
+                            bidViewModel = viewModel,
+                            list = uiState.historyRecArr,
+                            navController = navController
 
-                    NavigationDrawerItem(
-                        label = { Text("test") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.Test.name)
-                        }
-                    )
+                        )
+                    }
+                    composable(TaylorSwitchScreen.BidHistory.name) {
+                        viewModel.getUserHistoryArray("userBid", "bidRef")
+                        BidHistoryScreen(
+                            bidViewModel = viewModel,
+                            list = uiState.historyRecArr,
+                            navController = navController
 
-                    NavigationDrawerItem(
-                        label = { Text("login") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
+                        )
+                    }
+                    composable(TaylorSwitchScreen.Test.name) {
+//                    MultiplePhotoPicker()
+                    }
+                    composable(TaylorSwitchScreen.LoginPage.name) {
+                        LoginScreen(
+                            viewModel = userLoginViewModel,
+                            navController = navController,
+                            onSignUpClick = {
+                                navController.navigate(TaylorSwitchScreen.SignUpPage.name)
                             }
-                            navController.navigate(TaylorSwitchScreen.LoginPage.name)
-                        }
-                    )                // ...other drawer items
-
-                    NavigationDrawerItem(
-                        label = { Text("Edit Profile") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
-                        }
-                    )
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+                    composable(TaylorSwitchScreen.EditProfilePage.name) {
+                        EditProfileScreen(
+                            viewModel = userProfileViewModel,
+                            onBackClick = { navController.navigate(TaylorSwitchScreen.MainPage.name) },
+                            navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
                 }
             }
         }
-    ) {
+    } else {
         Scaffold(
             topBar = {
-                if (currentDestination == TaylorSwitchScreen.ViewBid.name + "/{auctionId}") {
+                if(currentDestination == TaylorSwitchScreen.LoginPage.name){
                     TaylorSwitchAppBar(
+                        title = "Taylor Switch",
+                        canNavigateBack = false,
+                        navigateUp = { /* TODO: implement back navigation */ },
+                        onNavigationIconClick = {},
+                        disableSidebar = true
+                    )
+                }else if(currentDestination == TaylorSwitchScreen.SignUpPage.name){
+                    TaylorSwitchAppBar(
+                        title = "Sign Up",
                         canNavigateBack = true,
                         navigateUp = { navController.popBackStack() },
                         onNavigationIconClick = {}
                     )
-                } else {
-                    TaylorSwitchAppBar(
-                        canNavigateBack = false,
-                        navigateUp = { /* TODO: implement back navigation */ },
-                        onNavigationIconClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                        }
-                    )
-                }
-            },
-            bottomBar = {
-                if (currentDestination == TaylorSwitchScreen.MainPage.name) {
-                    TaylorSwitchBottomBar(tabBarItems = tabBarItems, navController = navController)
-                }
-            },
-            floatingActionButton = { MainUI() }
-        )
-        { innerPadding ->
-            val uiState by viewModel.uiState.collectAsState()
-            NavHost(
-                navController = navController,
-                startDestination = TaylorSwitchScreen.Test.name,
-                modifier = Modifier.padding(innerPadding)
-            ) {
-                composable(TaylorSwitchScreen.MainPage.name) {
-                    HomeScreen(
-                        viewModel = viewModel,
-                        navController = navController
-                    )
-                }
-                //Bid
-                composable(route = TaylorSwitchScreen.PostBid.name) {
-//                    viewModel.resetUiState()
-                    PostScreen(
-                        onPostButtonClicked = {
-                            viewModel.postBid(context = context)
-                        },
-                        bidViewModel = viewModel
-                    )
-//                    fab()
                 }
 
-                composable(TaylorSwitchScreen.ViewBid.name + "/{auctionId}") { backStackEntry ->
-                    val auctionId = backStackEntry.arguments?.getString("auctionId")
-                    viewModel.getAuctionById("$auctionId")
-                    BidSession(
-                        auctionId = auctionId,
-                        bidUiState = uiState,
-                        bidViewModel = viewModel,
-                        navController = navController
-                    )
-                }
-
-                composable(TaylorSwitchScreen.PostHistory.name) {
-
-                    viewModel.getUserHistoryArray("userPost", "postRef")
-                    PostHistoryScreen(
-                        bidViewModel = viewModel,
-                        list = uiState.historyRecArr,
-                        navController = navController
-
-                    )
-                }
-                composable(TaylorSwitchScreen.BidHistory.name) {
-                    viewModel.getUserHistoryArray("userBid", "bidRef")
-                    BidHistoryScreen(
-                        bidViewModel = viewModel,
-                        list = uiState.historyRecArr,
-                        navController = navController
-
-                    )
-                }
-                composable(TaylorSwitchScreen.Test.name) {
-//                    MultiplePhotoPicker()
-                }
-                composable(TaylorSwitchScreen.LoginPage.name) {
-                    LoginScreen(
-                        viewModel = userLoginViewModel,
-                        navController = navController,
-                        onSignUpClick = {
-                            navController.navigate(TaylorSwitchScreen.SignUpPage.name)
-                        }
-//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
-                    )
-                }
-                composable(TaylorSwitchScreen.SignUpPage.name) {
-                    SignUpScreen(
-                        viewModel = userViewModel,
-                        navController = navController,
-//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
-                    )
-                }
-                composable(TaylorSwitchScreen.EditProfilePage.name) {
-                    EditProfileScreen(
-                        viewModel = userProfileViewModel,
-                        onBackClick = { navController.navigate(TaylorSwitchScreen.MainPage.name) },
-                        navController = navController
-//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
-                    )
-                }
             }
+        ) {
+            innerPadding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = TaylorSwitchScreen.LoginPage.name,
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    composable(TaylorSwitchScreen.LoginPage.name) {
+                            LoginScreen(
+                                viewModel = userLoginViewModel,
+                                navController = navController,
+                                onSignUpClick = {
+                                    navController.navigate(TaylorSwitchScreen.SignUpPage.name)
+                                }
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                            )
+                        }
+                    composable(TaylorSwitchScreen.MainPage.name) {
+                        HomeScreen(
+                            viewModel = viewModel,
+                            navController = navController
+                        )
+                    }
+                    composable(TaylorSwitchScreen.SignUpPage.name) {
+                        SignUpScreen(
+                            viewModel = userViewModel,
+                            navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+
+                    }
+                }
+
         }
+
     }
 
 
-}
+
+
+
+
 
 
 @Preview(showSystemUi = false, showBackground = false)

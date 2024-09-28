@@ -51,13 +51,15 @@ enum class MultiFloatingState{
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaylorSwitchAppBar(
+    title: String,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    onNavigationIconClick: () -> Unit
+    onNavigationIconClick: () -> Unit,
+    disableSidebar: Boolean = false
 ){
     TopAppBar(
-        title = { Text(stringResource(id = R.string.app_name)) },
+        title = { Text(title) },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -71,11 +73,16 @@ fun TaylorSwitchAppBar(
                     )
                 }
             }else{
-                IconButton(onClick = onNavigationIconClick) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Toggle drawer"
-                )
+                if(disableSidebar){
+
+                }else{
+                    IconButton(onClick = onNavigationIconClick) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Toggle drawer"
+                        )
+                }
+
             }
             }
         }

@@ -73,18 +73,7 @@ fun EditProfileScreen(
         }
     }
     val uiState = viewModel.uiState
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit Profile") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -181,7 +170,7 @@ fun EditProfileScreen(
             }
         }
     }
-}
+
 
 //@Composable
 //fun EditableProfileField(
