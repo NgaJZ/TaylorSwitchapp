@@ -20,67 +20,153 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
 import com.example.taylorswitch.TaylorSwitchScreen
+import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.historyRec
+import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 
 @Composable
 fun PostHistoryScreen(bidViewModel: BidViewModel, list: List<historyRec> = emptyList(), navController: NavHostController) {
 
-    LaunchedEffect(Unit) {
-        bidViewModel.getUserHistoryArray("0", "userPost", "postRef")
+//    LaunchedEffect(Unit) {
+//        bidViewModel.getUserHistoryArray( "userPost", "postRef")
+//    }
+
+    val windowSize = rememberWindowSize()
+    when (windowSize.width) {
+        WindowType.SMALL ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(list) { postRec ->
+                    ListPostingPortrait(
+                        title = postRec.name,
+                        highestBid = postRec.highestBid.toString(),
+                        endDate = postRec.endDate,
+                        endTime = postRec.endTime,
+                        onClickStartSource = {
+                            navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${postRec.id.toInt()}")
+                            bidViewModel.getAuctionById((postRec.id.toInt()).toString())
+                        },
+                        live = postRec.live
+                    )
+
+                }
+            }
+
+        else ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(list) { postRec ->
+                    ListPostingLandscape(
+                        imageRef = postRec.imageRef.get(0),
+                        title = postRec.name,
+                        highestBid = postRec.highestBid.toString(),
+                        endDate = postRec.endDate,
+                        endTime = postRec.endTime,
+                        onClickStartSource = {
+                            navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${postRec.id.toInt()}")
+                            bidViewModel.getAuctionById((postRec.id.toInt()).toString())
+                        },
+                        live = postRec.live
+                    )
+
+                }
+            }
+
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(list) { postRec ->
-            ListPosting(
-                id = postRec.id.toString(),
-                title = postRec.name,
-                highestBid = postRec.highestBid.toString(),
-                endDate = postRec.endDate,
-                endTime = postRec.endTime,
-                onClickStartSource = {
-                    navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${postRec.id.toInt()}")
-                    bidViewModel.getAuctionById((postRec.id.toInt()).toString())
-                },
-                live = postRec.live
-            )
-
-        }
-    }
 }
 
+
+
 @Composable
-private fun ListPosting(
-//    @DrawableRes image: Int,
-    id: String = "", title: String, highestBid: String, endDate: String, endTime: String,onClickStartSource: () -> Unit, live: Boolean
+private fun ListPostingPortrait(
+    title: String, highestBid: String, endDate: String, endTime: String,onClickStartSource: () -> Unit, live: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row() {
-            Image(
-                painterResource(id = R.drawable.mail), contentDescription = "item",
-                Modifier
-                    .size(80.dp)
-                    .align(Alignment.CenterVertically)
-                    .padding(10.dp)
-            )
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Spacer(modifier = Modifier.height(2.dp))
 
-                Text(text = stringResource(id = R.string.title, id))
-                Text(text = stringResource(id = R.string.highest, highestBid))
+                Text(text = stringResource(id = R.string.title, title))
+                Text(text = stringResource(id = R.string.highest, highestBid.toDoubleOrNull()?:0.00))
+                Text(text = stringResource(id = R.string.endDate, endDate))
+                Text(text = stringResource(id = R.string.endTime, endTime))
+            }
+        }
+
+        if(live){
+            Button(
+                onClick = onClickStartSource, enabled = true, modifier = Modifier
+                    .align(Alignment.CenterVertically)
+            ) {
+
+                Text(text = stringResource(id = R.string.live))
+            }
+        }else{
+            Button(
+                onClick = onClickStartSource, enabled = false, modifier = Modifier
+                    .align(Alignment.CenterVertically)
+            ) {
+
+                Text(text = stringResource(id = R.string.end))
+            }
+        }
+
+    }
+    HorizontalDivider(thickness = 1.dp)
+}
+
+
+@Composable
+private fun ListPostingLandscape(
+    imageRef: String = "", title: String, highestBid: String, endDate: String, endTime: String,onClickStartSource: () -> Unit, live: Boolean
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row() {
+            if(imageRef != ""){
+                Image(modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.CenterVertically)
+                    .padding(10.dp),
+                    contentScale = ContentScale.Crop,
+                    painter = rememberImagePainter(data = imageRef),
+                    contentDescription = "Thumbnail")
+            }else{
+                Image(modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.CenterVertically)
+                    .padding(10.dp),
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(id = R.drawable.image),
+                    contentDescription = "image description"
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(text = stringResource(id = R.string.title, title))
+                Text(text = stringResource(id = R.string.highest, highestBid.toDoubleOrNull()?:0.00))
                 Text(text = stringResource(id = R.string.endDate, endDate))
                 Text(text = stringResource(id = R.string.endTime, endTime))
 

@@ -51,9 +51,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchApp
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
@@ -64,30 +67,34 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 fun ReviewTradeRequest(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel = viewModel()
+    tradeViewModel: TradeViewModel = viewModel(),
+    navController: NavHostController
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
         WindowType.SMALL -> ReviewTradeRequestPortrait(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
         else -> ReviewTradeRequestLandscape(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestPortrait(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
@@ -234,12 +241,36 @@ fun ReviewTradeRequestPortrait(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -249,12 +280,36 @@ fun ReviewTradeRequestPortrait(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -274,7 +329,8 @@ fun ReviewTradeRequestPortrait(
 fun ReviewTradeRequestLandscape(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val lazyListState = rememberLazyListState()
     val multiplePhotoPicker = rememberLauncherForActivityResult(
@@ -436,7 +492,10 @@ fun ReviewTradeRequestLandscape(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.rejectTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -454,7 +513,10 @@ fun ReviewTradeRequestLandscape(
                                 .padding(0.dp)
                                 .width(100.dp)
                                 .height(44.dp),
-                            onClick = { tradeViewModel.acceptTrade(tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -469,12 +531,36 @@ fun ReviewTradeRequestLandscape(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,

@@ -51,9 +51,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
@@ -64,19 +66,22 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 fun TradeRequestScreen(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel = viewModel()
+    tradeViewModel: TradeViewModel = viewModel(),
+    navController: NavHostController
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
         WindowType.SMALL -> TradeRequestScreenPortrait(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
         else -> TradeRequestScreenLandscape(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
     }
 }
@@ -87,7 +92,8 @@ fun TradeRequestScreen(
 fun TradeRequestScreenPortrait(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
@@ -252,7 +258,10 @@ fun TradeRequestScreenPortrait(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -267,7 +276,10 @@ fun TradeRequestScreenPortrait(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = false
                         ) {
@@ -292,7 +304,8 @@ fun TradeRequestScreenPortrait(
 fun TradeRequestScreenLandscape(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val lazyListState = rememberLazyListState()
     val multiplePhotoPicker = rememberLauncherForActivityResult(
@@ -473,7 +486,10 @@ fun TradeRequestScreenLandscape(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                            },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -488,7 +504,10 @@ fun TradeRequestScreenLandscape(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                            },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = false
                         ) {

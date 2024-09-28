@@ -3,13 +3,11 @@
 package com.example.taylorswitch.ui.Auction.UiScreen
 
 import android.icu.text.SimpleDateFormat
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,8 +27,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -41,17 +40,17 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,21 +60,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
-import com.example.taylorswitch.R
-import com.example.taylorswitch.data.BidUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
-import com.example.taylorswitch.ui.theme.PurpleGrey80
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -97,12 +93,9 @@ fun PostScreen(
     onPostButtonClicked: () -> Unit
 ) {
 
-    LaunchedEffect(Unit) {
-        bidViewModel.resetUiState()
-//        bidViewModel.resetViewModel()
-    }
 
-    val bidUiState by bidViewModel.uiState.collectAsState()
+
+    val postUiState by bidViewModel.postUiState.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var showTimePicker by remember { mutableStateOf(false) }
@@ -189,7 +182,7 @@ fun PostScreen(
                     .padding(10.dp)
                     .width(408.dp)
                     .height(60.dp),
-                value = bidUiState.title,
+                value = postUiState.title,
                 onValueChange = { bidViewModel.updateListingTitle(it) },
                 label = { Text("Listing Title") },
                 trailingIcon = {
@@ -207,7 +200,7 @@ fun PostScreen(
                     .padding(10.dp)
                     .width(408.dp)
                     .height(152.dp),
-                value = bidUiState.description,
+                value = postUiState.description,
                 onValueChange = { bidViewModel.updateListingDescription(it) },
                 label = { Text("Description") },
                 trailingIcon = {
@@ -231,9 +224,9 @@ fun PostScreen(
                         .padding(10.dp)
                         .height(60.dp)
                         .width(160.dp),
-                    value = bidUiState.startBidInput,
+                    value = postUiState.startBidInput,
                     onValueChange = { bidViewModel.updateStartBidAmount(it) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     label = { Text("Start Bid") },
                 )
                 OutlinedTextField(
@@ -242,7 +235,7 @@ fun PostScreen(
                         .padding(10.dp)
                         .height(60.dp)
                         .width(160.dp),
-                    value = bidUiState.minBidInput,
+                    value = postUiState.minBidInput,
                     onValueChange = { bidViewModel.updateMinBidAmount(it) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     label = { Text("Min Bid") }
@@ -254,7 +247,7 @@ fun PostScreen(
                     .padding(10.dp)
             ) {
                 OutlinedTextField(
-                    value = bidUiState.endDate,
+                    value = postUiState.endDate,
                     onValueChange = {},
                     label = { Text("End Date") },
                     readOnly = true,
@@ -314,14 +307,14 @@ fun PostScreen(
                     .padding(10.dp)
             ) {
                 OutlinedTextField(
-                    value = bidUiState.endTime,
+                    value = postUiState.endTime,
                     onValueChange = {},
                     label = { Text("End Time") },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showTimePicker = !showTimePicker }) {
                             Icon(
-                                imageVector = Icons.Default.DateRange,
+                                imageVector = Icons.Filled.AccessTime,
                                 contentDescription = "Select Time"
                             )
                         }
@@ -467,7 +460,7 @@ fun PostScreen(
                             .padding(10.dp)
                             .width(408.dp)
                             .height(60.dp),
-                        value = bidViewModel.name,
+                        value = postUiState.title,
                         onValueChange = { bidViewModel.updateListingTitle(it) },
                         label = { Text("Listing Title") },
                         trailingIcon = {
@@ -485,7 +478,7 @@ fun PostScreen(
                             .padding(10.dp)
                             .width(408.dp)
                             .height(152.dp),
-                        value = bidViewModel.description,
+                        value = postUiState.description,
                         onValueChange = { bidViewModel.updateListingDescription(it) },
                         label = { Text("Description") },
                         trailingIcon = {
@@ -514,7 +507,7 @@ fun PostScreen(
                                 .padding(10.dp)
                                 .height(60.dp)
                                 .width(160.dp),
-                            value = bidViewModel.startAmount,
+                            value = postUiState.startBidInput,
                             onValueChange = { bidViewModel.updateStartBidAmount(it) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             label = { Text("Start Bid") },
@@ -525,7 +518,7 @@ fun PostScreen(
                                 .padding(10.dp)
                                 .height(60.dp)
                                 .width(160.dp),
-                            value = bidViewModel.minAmount,
+                            value = postUiState.minBidInput,
                             onValueChange = { bidViewModel.updateMinBidAmount(it) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             label = { Text("Min Bid") }
@@ -537,7 +530,7 @@ fun PostScreen(
                             .padding(10.dp)
                     ) {
                         OutlinedTextField(
-                            value = bidViewModel.endDate,
+                            value = postUiState.endDate,
                             onValueChange = {},
                             label = { Text("End Date") },
                             readOnly = true,
@@ -565,8 +558,10 @@ fun PostScreen(
 //                                .offset(y = 64.dp)
                                         .shadow(elevation = 4.dp)
                                         .background(MaterialTheme.colorScheme.surface)
+
                                 ) {
                                     DatePickerDialog(
+                                        modifier = Modifier.verticalScroll(rememberScrollState()),
                                         onDismissRequest = { showDatePicker = !showDatePicker },
                                         confirmButton = {
                                             TextButton(onClick = {
@@ -598,14 +593,14 @@ fun PostScreen(
                             .padding(10.dp)
                     ) {
                         OutlinedTextField(
-                            value = bidViewModel.endTime,
+                            value = postUiState.endTime,
                             onValueChange = {},
                             label = { Text("End Time") },
                             readOnly = true,
                             trailingIcon = {
                                 IconButton(onClick = { showTimePicker = !showTimePicker }) {
                                     Icon(
-                                        imageVector = Icons.Default.DateRange,
+                                        imageVector = Icons.Filled.AccessTime,
                                         contentDescription = "Select Time"
                                     )
                                 }
@@ -628,7 +623,7 @@ fun PostScreen(
                                         .background(MaterialTheme.colorScheme.surface)
                                 ) {
 
-                                    DialWithDialogExample(
+                                    AdvancedTimePickerExample(
                                         onDismiss = {
                                             showTimePicker = !showTimePicker
                                         },
@@ -762,4 +757,98 @@ fun TimePickerDialog(
         },
         text = { content() }
     )
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+// [START android_compose_components_advanced]
+@Composable
+fun AdvancedTimePickerExample(
+    onConfirm: (TimePickerState) -> Unit,
+    onDismiss: () -> Unit,
+) {
+
+    val currentTime = Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
+
+    /** Determines whether the time picker is dial or input */
+    var showDial by remember { mutableStateOf(true) }
+
+    /** The icon used for the icon button that switches from dial to input */
+    val toggleIcon = if (showDial) {
+        Icons.Filled.EditCalendar
+    } else {
+        Icons.Filled.AccessTime
+    }
+
+    AdvancedTimePickerDialog(
+        onDismiss = { onDismiss() },
+        onConfirm = { onConfirm(timePickerState) },
+
+    ) {
+        if (showDial) {
+            TimePicker(
+                state = timePickerState,
+            )
+        } else {
+            TimeInput(
+                state = timePickerState,
+            )
+        }
+    }
+}
+
+@Composable
+fun AdvancedTimePickerDialog(
+    title: String = "Select Time",
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+            modifier =
+            Modifier
+                .width(IntrinsicSize.Min)
+                .height(IntrinsicSize.Min)
+                .background(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface
+                ),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium
+                )
+                content()
+                Row(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) { Text("Cancel") }
+                    TextButton(onClick = onConfirm) { Text("OK") }
+                }
+            }
+        }
+    }
 }

@@ -37,22 +37,9 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
 //    var confirmPassword by remember { mutableStateOf("") }
     //var address by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Sign up", fontSize = 24.sp) },
-                navigationIcon = {
-                    IconButton(onClick = { /* Handle back navigation */ }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                modifier = Modifier.padding(start = 8.dp, top = 8.dp)
-            )
-        }
-    ) { innerPadding ->
+
         Column(
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
@@ -139,7 +126,7 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
 
 
             Button(
-                onClick = { viewModel.signUp(uiState.email, uiState.password) },
+                onClick = { viewModel.signUp(uiState.email,uiState.username, uiState.password) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (uiState.isLoading) {
@@ -161,7 +148,7 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
             }
         }
     }
-}
+
 
 //@Preview(showBackground = true)
 //@Composable

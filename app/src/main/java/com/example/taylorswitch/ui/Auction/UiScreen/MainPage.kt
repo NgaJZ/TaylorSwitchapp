@@ -15,12 +15,20 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.SyncAlt
+import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +43,9 @@ import com.example.taylorswitch.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
+import com.example.taylorswitch.TaylorSwitchBottomBar
 import com.example.taylorswitch.TaylorSwitchScreen
+import com.example.taylorswitch.data.TabBarItem
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.fireStore.model.Auction
 import com.example.taylorswitch.data.rememberWindowSize
@@ -54,22 +64,61 @@ fun HomeScreen(viewModel: BidViewModel = viewModel(), navController:NavHostContr
         else -> 4              // 3 columns for large screens (landscape)
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(gridSize),
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxSize()
-    ) {
-        items(auctions) { auction -> // Adjust the number of items accordingly
-            ItemCard(auction, onClickStartSource = {
-                navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${auction.id}")
-                viewModel.getAuctionById(auction.id.toString())
+//    val tradeTab = TabBarItem(
+//        title = "Trade",
+//        path = TaylorSwitchScreen.PostBid.name,
+//        selectedIcon = Icons.Filled.SyncAlt,
+//        unselectedIcon = Icons.Outlined.SyncAlt
+//    )
+//    val bidTab = TabBarItem(
+//        title = "Bid",
+//        path = TaylorSwitchScreen.MainPage.name,
+//        selectedIcon = Icons.Filled.Gavel,
+//        unselectedIcon = Icons.Outlined.Gavel
+//    )
 
+//    val tabBarItems = listOf(tradeTab, bidTab, bidTab)
+//    var selectedTabIndex by rememberSaveable {
+//        mutableStateOf(0)
+//    }
+//    Column(){
+//        Row(){
+//            tabBarItems.forEachIndexed { index, tabBarItem ->
+//
+//                TextButton(
+////                    selected = selectedTabIndex == index,
+//                    onClick = {
+//                        selectedTabIndex = index
+//                        navController.navigate(tabBarItem.path)
+//                    },
+////                    icon = {},
+//                ){
+//                    Text(tabBarItem.title)
+//                }
+//
+//            }
+//        }
+
+
+//        TaylorSwitchBottomBar(tabBarItems = tabBarItems, navController = navController)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(gridSize),
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxSize()
+        ) {
+            items(auctions) { auction -> // Adjust the number of items accordingly
+                ItemCard(auction, onClickStartSource = {
+                    navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${auction.id}")
+                    viewModel.getAuctionById(auction.id.toString())
+
+                }
+                )
             }
-            )
         }
     }
-}
+
+//}
 
 @Composable
 fun ItemCard(auction: Auction, onClickStartSource : () -> Unit){
