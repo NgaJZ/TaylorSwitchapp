@@ -37,5 +37,6 @@ data class UserProfileUiState(
     val address: String = "",
     val errorMessage: String? = null,
     val isLoading: Boolean = false,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val profileImageUrl: String = ""
 )

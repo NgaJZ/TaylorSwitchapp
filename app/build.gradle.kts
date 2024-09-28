@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.runtime.livedata)
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.2")
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.foundation.android)
@@ -118,3 +120,4 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.0.5")
 
 }
+

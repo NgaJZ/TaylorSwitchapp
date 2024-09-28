@@ -39,11 +39,14 @@ import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
 import com.example.taylorswitch.ui.theme.AppViewModelProvider
+import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
+import com.example.taylorswitch.ui.user.profile.EditProfileScreen
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
     LoginPage,
     SignUpPage,
+    EditProfilePage,
     MainPage,
     ViewBid,
     PostBid,
@@ -59,6 +62,7 @@ fun TaylorSwitchApp(
     viewModel: BidViewModel = viewModel(),
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
+    userProfileViewModel: UserProfileViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -153,6 +157,19 @@ fun TaylorSwitchApp(
                         navController.navigate(TaylorSwitchScreen.LoginPage.name)
                     }
                 )                // ...other drawer items
+
+                NavigationDrawerItem(
+                    label = { Text("Edit Profile") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
+                    }
+                )
             }
         }
     ) {
@@ -246,6 +263,15 @@ fun TaylorSwitchApp(
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                     )
                 }
+                composable(TaylorSwitchScreen.EditProfilePage.name){
+                    EditProfileScreen(
+                        viewModel =  userProfileViewModel,
+                        onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                        navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                    )
+                }
             }
         }
     }
@@ -259,3 +285,4 @@ fun GreetingPreview() {
 //        TaylorSwitchApp()
     }
 }
+

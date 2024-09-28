@@ -1,5 +1,6 @@
 package com.example.taylorswitch.ui.user.UserViewmodel
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,11 +12,14 @@ import com.example.taylorswitch.ui.user.profile.saveUserProfileToFirebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 
 class UserProfileViewModel : ViewModel() {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firebaseStorage = FirebaseStorage.getInstance()
+
 
 
     var uiState by mutableStateOf(UserProfileUiState())
@@ -33,7 +37,7 @@ class UserProfileViewModel : ViewModel() {
     fun fetchUserProfile() {
         val userId = firebaseAuth.currentUser?.uid ?: return
 
-        firestore.collection("users").document(userId)
+        firestore.collection("user").document(userId)
             .get()
             .addOnSuccessListener { document ->
                 document?.let {
@@ -97,6 +101,57 @@ class UserProfileViewModel : ViewModel() {
 //            }
     }
 
+    // Update username locally in uiState
+    fun onUsernameChanged(newUsername: String) {
+        uiState = uiState.copy(username = newUsername)
+    }
+
+    // Update password locally in uiState
+    fun onPasswordChanged(newPassword: String) {
+        uiState = uiState.copy(password = newPassword)
+    }
+
+    // Update phone number locally in uiState
+    fun onPhoneNumberChanged(newPhoneNumber: String) {
+        uiState = uiState.copy(phoneNumber = newPhoneNumber)
+    }
+
+    // Update date of birth locally in uiState
+    fun onDateOfBirthChanged(newDateOfBirth: String) {
+        uiState = uiState.copy(dateOfBirth = newDateOfBirth)
+    }
+
+    // Update email locally in uiState
+    fun onEmailChanged(newEmail: String) {
+        uiState = uiState.copy(email = newEmail)
+    }
+
+    // Update address locally in uiState
+    fun onAddressChanged(newAddress: String) {
+        uiState = uiState.copy(address = newAddress)
+    }
+
+    // Function to upload image and save URL to Firestore
+    fun uploadProfileImage(imageUri: Uri) {
+        val userId = firebaseAuth.currentUser?.uid ?: return
+        val storageRef = firebaseStorage.reference.child("profile_images/$userId.jpg")
+
+        storageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    // Save image URL to Firestore
+                    firestore.collection("users").document(userId)
+                        .update("profileImageUrl", uri.toString())
+                        .addOnSuccessListener {
+                            uiState = uiState.copy(profileImageUrl = uri.toString())
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                uiState = uiState.copy(errorMessage = e.message)
+            }
+    }
+
     // Update Username
     fun updateUsername(newUsername: String) {
         if (userId.isNotEmpty()) {
@@ -104,6 +159,7 @@ class UserProfileViewModel : ViewModel() {
                 val userDoc = firestore.collection("users").document(userId)
                 userDoc.update("username", newUsername).addOnSuccessListener {
                     // Handle success (e.g., notify UI)
+                    uiState = uiState.copy(isSuccess = true)
                 }.addOnFailureListener {
                     // Handle failure (e.g., notify UI)
                 }
@@ -118,7 +174,7 @@ class UserProfileViewModel : ViewModel() {
             viewModelScope.launch {
                 user.updatePassword(newPassword).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        // Handle success
+                        uiState = uiState.copy(isSuccess = true)
                     } else {
                         uiState = uiState.copy(errorMessage = task.exception?.message)
                     }
@@ -133,7 +189,7 @@ class UserProfileViewModel : ViewModel() {
             viewModelScope.launch {
                 val userDoc = firestore.collection("users").document(userId)
                 userDoc.update("phoneNumber", newPhoneNumber).addOnSuccessListener {
-                    // Handle success
+                    uiState = uiState.copy(isSuccess = true)
                 }.addOnFailureListener {
                     // Handle failure
                 }
@@ -147,7 +203,7 @@ class UserProfileViewModel : ViewModel() {
             viewModelScope.launch {
                 val userDoc = firestore.collection("users").document(userId)
                 userDoc.update("dateOfBirth", newDateOfBirth).addOnSuccessListener {
-                    // Handle success
+                    uiState = uiState.copy(isSuccess = true)
                 }.addOnFailureListener {
                     // Handle failure
                 }
@@ -165,6 +221,7 @@ class UserProfileViewModel : ViewModel() {
                         // Update Firestore after successful email change
                         val userDoc = firestore.collection("users").document(userId)
                         userDoc.update("email", newEmail)
+                        uiState = uiState.copy(isSuccess = true)
                     } else {
                         uiState = uiState.copy(errorMessage = task.exception?.message)
                     }
@@ -179,7 +236,7 @@ class UserProfileViewModel : ViewModel() {
             viewModelScope.launch {
                 val userDoc = firestore.collection("users").document(userId)
                 userDoc.update("address", newAddress).addOnSuccessListener {
-                    // Handle success
+                    uiState = uiState.copy(isSuccess = true)
                 }.addOnFailureListener {
                     // Handle failure
                 }
