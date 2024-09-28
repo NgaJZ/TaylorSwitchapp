@@ -35,7 +35,7 @@ fun LoginScreen(
     navController: NavController,
     onSignUpClick: () -> Unit
 //    onForgotPasswordClick: () -> Unit,  // Function to handle "Forgot Password" click
-             // Function to handle "Sign Up" navigation
+    // Function to handle "Sign Up" navigation
 ) {
 
     val uiState = viewModel.uiState
@@ -47,7 +47,7 @@ fun LoginScreen(
     LaunchedEffect(loginState) {
         if (loginState is UserLoginViewModel.LoginState.Success) {
             // Navigate to main page after successful login
-            navController.navigate(TaylorSwitchScreen.MainPage.name)
+            navController.navigate(TaylorSwitchScreen.BidMainPage.name)
         }
     }
 
@@ -148,6 +148,7 @@ fun LoginScreen(
             TextButton(onClick = onSignUpClick) {
                 Text(text = "Don’t have an account? Sign up")
             }
+
         }
     }
 

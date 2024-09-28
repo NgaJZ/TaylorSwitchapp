@@ -57,7 +57,6 @@ import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostTradeItemScreen(
     tradeViewModel: TradeViewModel = viewModel(),

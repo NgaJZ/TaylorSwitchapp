@@ -1,5 +1,6 @@
 package com.example.taylorswitch.ui.Auction.UiScreen
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,9 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
 import com.example.taylorswitch.data.BidUiState
@@ -53,22 +52,28 @@ import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import kotlinx.coroutines.delay
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.navigation.NavHostController
+import com.example.taylorswitch.TaylorSwitchScreen
 
 @Composable
 fun BidSession(
     auctionId: String?,
     bidUiState: BidUiState,
-    bidViewModel: BidViewModel = viewModel()
+    bidViewModel: BidViewModel = viewModel(),
+    navController: NavHostController
 ) {
 
     var timeRemainingInMillis by remember { mutableStateOf(0L) }
-
+    val lazyListState = rememberLazyListState()
     LaunchedEffect(Unit) {
-
+        bidViewModel.getAuctionById("$auctionId")
         delay(2000L)
         // Calculate the initial time left
         timeRemainingInMillis =
@@ -96,26 +101,32 @@ fun BidSession(
         WindowType.SMALL -> BidSessionPortrait(
             auctionId = auctionId,
             bidUiState = bidUiState,
-            bidViewModel = bidViewModel
+            bidViewModel = bidViewModel,
+            navController = navController,
+            lazyListState = lazyListState
         )
 
         else -> BidSessionLandscape(
             auctionId = auctionId,
             bidUiState = bidUiState,
-            bidViewModel = bidViewModel
+            bidViewModel = bidViewModel,
+            navController = navController,
+            lazyListState = lazyListState
         )
     }
-
 }
 
 @Composable
 fun BidSessionPortrait(
     bidViewModel: BidViewModel,
     auctionId: String?,
-    bidUiState: BidUiState
+    bidUiState: BidUiState,
+    navController: NavHostController,
+    lazyListState: LazyListState
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column() {
@@ -127,9 +138,12 @@ fun BidSessionPortrait(
                 LazyRow(
                     modifier = Modifier
                         .fillMaxHeight(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    state = lazyListState,  // Pass the list state
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    flingBehavior = rememberSnapFlingBehavior(lazyListState)
                 ) {
-                    if (bidUiState.imageRef.size > 0) {
+                    if (bidUiState.imageRef.isNotEmpty()) {
                         items(bidUiState.imageRef) { imageUrl ->
                             ImageCardBS(imageUrl, modifier = Modifier.fillMaxHeight())
                         }
@@ -148,7 +162,6 @@ fun BidSessionPortrait(
                     }
                 }
 
-//
                 Column(
                     modifier = Modifier
                         .matchParentSize()
@@ -161,10 +174,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 45.sp,
                             lineHeight = 52.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
-                            fontWeight = FontWeight(600),
-//                            color = Color(0xFFFFFFFF),
-//                            ${auction?.name}
+                            fontWeight = FontWeight(600)
                         )
                     )
                     Text(
@@ -173,9 +183,7 @@ fun BidSessionPortrait(
                         style = TextStyle(
                             fontSize = 12.sp,
                             lineHeight = 16.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
                             fontWeight = FontWeight(600),
-//                            color = Color(0xFFFFFFFFF),
                             letterSpacing = 0.4.sp,
                         )
                     )
@@ -184,7 +192,6 @@ fun BidSessionPortrait(
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-//                    .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row() {
@@ -198,7 +205,7 @@ fun BidSessionPortrait(
                     )
 //                Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = bidUiState.poster,
+                        text = bidUiState.posterName,
                         style = TextStyle(
                             fontSize = 16.sp,
                             lineHeight = 24.sp,
@@ -240,7 +247,7 @@ fun BidSessionPortrait(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.startBidAmount.toString(),
+                        text = stringResource(R.string.MoneyShow, bidUiState.startBidAmount),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -263,7 +270,7 @@ fun BidSessionPortrait(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.minCallUp.toString(),
+                        text = stringResource(R.string.MoneyShow, bidUiState.minCallUp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -318,7 +325,8 @@ fun BidSessionPortrait(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = (bidUiState.highestBidder.bidAmount).toString(),
+                        text = stringResource(R.string.MoneyShow,
+                            ((bidUiState.highestBidder).bidAmount)),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -356,10 +364,10 @@ fun BidSessionPortrait(
                 }
                 OutlinedTextField(
                     modifier = Modifier
-                        .width(80.dp),
-                    value = bidViewModel.bidCallAmount,
+                        .width(100.dp),
+                    value = bidUiState.callAmount,
                     onValueChange = { bidViewModel.updateBidCall(it) },
-
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     label = {
                         if (bidViewModel.isCallNotValid()) {
                             Text("Error",
@@ -370,6 +378,7 @@ fun BidSessionPortrait(
 
                     }
 
+
                 )
                 IconButton(onClick = { bidViewModel.incBidCall() }) {
                     Icon(
@@ -378,12 +387,14 @@ fun BidSessionPortrait(
                     )
                 }
 
-                if(bidUiState.live){
+                if(bidViewModel.isCallNotValid() || !bidUiState.live || bidViewModel.uid == bidUiState.poster){
                     Button(
-//                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
-                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString()) },
+                        onClick = {
+                            bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
+                        },
                         shape = RoundedCornerShape(size = 8.dp),
-                        enabled = true
+                        enabled = false
                     ) {
                         Text(
                             text = "Bid",
@@ -396,11 +407,11 @@ fun BidSessionPortrait(
                     }
                 }else{
                     Button(
-                        onClick = {
-                            bidViewModel.callBid(auctionId = auctionId.toString())
-                                  },
+//                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
+                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
                         shape = RoundedCornerShape(size = 8.dp),
-                        enabled = false
+                        enabled = true
                     ) {
                         Text(
                             text = "Bid",
@@ -422,9 +433,11 @@ fun BidSessionPortrait(
 fun BidSessionLandscape(
     bidViewModel: BidViewModel,
     auctionId: String?,
-    bidUiState: BidUiState
+    bidUiState: BidUiState,
+    navController: NavHostController,
+    lazyListState: LazyListState
 ) {
-    val lazyListState = rememberLazyListState()
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -524,13 +537,11 @@ fun BidSessionLandscape(
                 )
 //                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = bidUiState.poster,
+                    text = bidUiState.posterName,
                     style = TextStyle(
                         fontSize = 16.sp,
                         lineHeight = 24.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
                         fontWeight = FontWeight(400),
-//                        color = Color(0xFF1D1B20),
                         letterSpacing = 0.5.sp,
                     )
                 )
@@ -538,7 +549,9 @@ fun BidSessionLandscape(
 
 
                 Button(
-                    onClick = {},
+                    onClick = {
+                        //todo: navigate to profile
+                    },
                     enabled = true
                 ) {
                     Text(
@@ -546,9 +559,7 @@ fun BidSessionLandscape(
                         style = TextStyle(
                             fontSize = 12.sp,
                             lineHeight = 20.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
                             fontWeight = FontWeight(500),
-//                            color = Color(0xFFFFFFFF),
                             textAlign = TextAlign.Center,
                             letterSpacing = 0.1.sp,
                         )
@@ -566,7 +577,8 @@ fun BidSessionLandscape(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.startBidAmount.toString(),
+                        text = stringResource(R.string.MoneyShow,
+                            bidUiState.startBidAmount),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -593,7 +605,8 @@ fun BidSessionLandscape(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.minCallUp.toString(),
+                        text = stringResource(R.string.MoneyShow,
+                            bidUiState.minCallUp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -656,7 +669,7 @@ fun BidSessionLandscape(
                 Column(modifier = Modifier.width(150.dp)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = bidUiState.highestBid.toString(),
+                        text = stringResource(R.string.MoneyShow, (bidUiState.highestBidder).bidAmount),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -698,13 +711,13 @@ fun BidSessionLandscape(
                 }
                 OutlinedTextField(
                     modifier = Modifier
-                        .width(80.dp),
-                    value = bidViewModel.bidCallAmount,
+                        .width(100.dp),
+                    value = bidUiState.callAmount,
                     onValueChange = { bidViewModel.updateBidCall(it) },
                     label = {
                         if (bidViewModel.isCallNotValid()) {
                             Text("Error",
-                            color = Color(red = 255, green = 0, blue = 0))
+                                color = Color(red = 255, green = 0, blue = 0))
                         } else {
                             Text("Bid")
                         }
@@ -723,23 +736,40 @@ fun BidSessionLandscape(
 
 
 
-                Button(
-//                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
-                    onClick = { bidViewModel.callBid(auctionId = auctionId.toString()) },
-                    shape = RoundedCornerShape(size = 8.dp),
-                    enabled = true
-                ) {
-                    Text(
-//                        modifier = Modifier.width(100.dp),
-                        text = auctionId.toString(),
-                        style = TextStyle(
-                            fontSize = 13.sp,
-                            lineHeight = 16.sp,
-//                            fontFamily = FontFamily(Font(R.font.inter)),
-                            fontWeight = FontWeight(800),
-//                            color = Color(0xFFF5F5F5)
+                if(bidUiState.live){
+                    Button(
+                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
+                        shape = RoundedCornerShape(size = 8.dp),
+                        enabled = true
+                    ) {
+                        Text(
+                            text = "Bid",
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                lineHeight = 16.sp,
+                                fontWeight = FontWeight(800)
+                            )
                         )
-                    )
+                    }
+                }else{
+                    Button(
+                        onClick = {
+                            bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
+                        },
+                        shape = RoundedCornerShape(size = 8.dp),
+                        enabled = false
+                    ) {
+                        Text(
+                            text = "Bid",
+                            style = TextStyle(
+                                fontSize = 13.sp,
+                                lineHeight = 16.sp,
+                                fontWeight = FontWeight(800)
+                            )
+                        )
+                    }
                 }
 
 

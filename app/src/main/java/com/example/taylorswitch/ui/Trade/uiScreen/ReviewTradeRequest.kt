@@ -2,11 +2,8 @@ package com.example.taylorswitch.ui.Trade.uiScreen
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,21 +24,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -51,43 +39,46 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
+import androidx.navigation.NavHostController
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequest(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel = viewModel()
+    tradeViewModel: TradeViewModel = viewModel(),
+    navController: NavHostController
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
         WindowType.SMALL -> ReviewTradeRequestPortrait(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
         else -> ReviewTradeRequestLandscape(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestPortrait(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
@@ -232,14 +223,38 @@ fun ReviewTradeRequestPortrait(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    if (tradeUiState.isOpen){
+                    if (tradeUiState.live){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -249,12 +264,36 @@ fun ReviewTradeRequestPortrait(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -274,7 +313,8 @@ fun ReviewTradeRequestPortrait(
 fun ReviewTradeRequestLandscape(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val lazyListState = rememberLazyListState()
     val multiplePhotoPicker = rememberLauncherForActivityResult(
@@ -434,9 +474,12 @@ fun ReviewTradeRequestLandscape(
                     horizontalArrangement = Arrangement.spacedBy(49.dp, Alignment.Start),
                     verticalAlignment = Alignment.Top,
                 ){
-                    if (tradeUiState.isOpen){
+                    if (tradeUiState.live){
                         Button(
-                            onClick = { tradeViewModel.rejectTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -454,7 +497,10 @@ fun ReviewTradeRequestLandscape(
                                 .padding(0.dp)
                                 .width(100.dp)
                                 .height(44.dp),
-                            onClick = { tradeViewModel.acceptTrade(tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -469,12 +515,36 @@ fun ReviewTradeRequestLandscape(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,

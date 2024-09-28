@@ -14,5 +14,6 @@ data class Auction(
     val endDate: String = "",
     val endTime: String ="",
     val live: Boolean = false,
-    val imageRef: List<String> = emptyList()
+    val imageRef: List<String> = emptyList(),
+    val poster: String = ""
 )

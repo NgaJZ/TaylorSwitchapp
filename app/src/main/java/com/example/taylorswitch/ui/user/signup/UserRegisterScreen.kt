@@ -1,4 +1,5 @@
 package com.example.taylorswitch.ui.user.signup
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,6 +25,7 @@ import androidx.navigation.NavController
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
@@ -37,22 +39,9 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
 //    var confirmPassword by remember { mutableStateOf("") }
     //var address by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Sign up", fontSize = 24.sp) },
-                navigationIcon = {
-                    IconButton(onClick = { /* Handle back navigation */ }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                modifier = Modifier.padding(start = 8.dp, top = 8.dp)
-            )
-        }
-    ) { innerPadding ->
+
         Column(
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
@@ -139,7 +128,7 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
 
 
             Button(
-                onClick = { viewModel.signUp(uiState.email, uiState.password) },
+                onClick = { viewModel.signUp(uiState.email,uiState.username, uiState.password) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (uiState.isLoading) {
@@ -161,7 +150,7 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
             }
         }
     }
-}
+
 
 //@Preview(showBackground = true)
 //@Composable

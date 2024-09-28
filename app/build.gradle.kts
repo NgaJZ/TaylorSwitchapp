@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
     id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+//    id("androidx.room")
 //    id("com.android.application")
 //    id("org.jetbrains.kotlin.android")
 //    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
@@ -49,14 +50,17 @@ android {
         compose = true
     }
     composeOptions {
-//        kotlinCompilerExtensionVersion = "1.5.4"
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.4"
+//        kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+//    room {
+//        schemaDirectory("$projectDir/schemas")
+//    }
 }
 
 dependencies {
@@ -72,9 +76,10 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage.ktx)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.androidx.runtime.livedata)
+    implementation ("com.google.firebase:firebase-firestore-ktx")
+//    implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.auth.ktx)
+    implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,6 +90,14 @@ dependencies {
     //noinspection UseTomlInstead
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation(libs.firebase.analytics)
+
+//    val room_version = "2.6.1"
+//
+//    implementation("androidx.room:room-runtime:$room_version")
+//    annotationProcessor("androidx.room:room-compiler:$room_version")
+//
+//    // To use Kotlin Symbol Processing (KSP)
+//    ksp("androidx.room:room-compiler:$room_version")
 
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")

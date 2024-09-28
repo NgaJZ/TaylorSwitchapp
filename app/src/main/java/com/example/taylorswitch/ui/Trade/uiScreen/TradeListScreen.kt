@@ -60,12 +60,11 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
                 ListPosting(
                     id = tradePostRec.id.toString(),
                     title = tradePostRec.title,
-                    tradeEnd = tradePostRec.tradeEnd,
                     onClickStartSource = {
                         navController.navigate(TaylorSwitchScreen.RequestTrade.name+"/${tradePostRec.id.toInt()}")
                         tradeViewModel.getTradeById((tradePostRec.id.toInt()).toString())
                     },
-                    isOpen = tradePostRec.isOpen
+                    isOpen = tradePostRec.live
                 )
             }
         }
@@ -73,7 +72,7 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
 
 @Composable
 private fun ListPosting(
-    id: String = "", title: String, tradeEnd: Boolean, onClickStartSource: () -> Unit, isOpen: Boolean
+    id: String = "", title: String, onClickStartSource: () -> Unit, isOpen: Boolean
 ){
     Row (
         modifier = Modifier.fillMaxWidth(),

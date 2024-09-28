@@ -11,9 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.taylorswitch.data.TradeStatus
 import com.example.taylorswitch.data.TradeUiState
-import com.example.taylorswitch.data.Trader
 import com.example.taylorswitch.data.fireStore.model.Trade
-import com.example.taylorswitch.data.localDatabase.TradePostLocal
 import com.example.taylorswitch.data.tradeHistory
 import com.example.taylorswitch.util.StorageUtil
 import com.google.firebase.Firebase
@@ -21,7 +19,6 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
@@ -38,7 +35,7 @@ class TradeViewModel : ViewModel() {
     var description by mutableStateOf("")
     var category by mutableStateOf("")
     var imageRef: List<String> = emptyList()
-    var trader by mutableStateOf(Trader())
+    var trader by mutableStateOf("")
     var tradeItem: List<String> = emptyList()
     var tradeItemUris by mutableStateOf<List<Uri>>(emptyList())
     var tradeStatus: TradeStatus = TradeStatus.Pending
@@ -107,9 +104,6 @@ class TradeViewModel : ViewModel() {
             title = tradeData.title
             description = tradeData.description
             category = tradeData.category
-            trader = Trader(tradeData.trader)
-            tradeItem = tradeData.tradeItem
-            tradeStatus = tradeData.tradeStatus
             imageRef = tradeData.imageRef
         }
         _tUiState.update { currentState ->
@@ -117,9 +111,6 @@ class TradeViewModel : ViewModel() {
                 title = title,
                 description = description,
                 category = category,
-                trader = trader,
-                tradeItem = tradeItem,
-                tradeStatus = tradeStatus,
                 imageRef = imageRef
             )
         }
@@ -152,8 +143,8 @@ class TradeViewModel : ViewModel() {
         }
     }
 
-    fun updateTrader(name: String, tradeItem: String){
-        trader = Trader(name, tradeItem)
+    fun updateTrader(name: String){
+        trader = name
         _tUiState.update { currentState ->
             currentState.copy(
                 trader = trader
@@ -232,7 +223,7 @@ class TradeViewModel : ViewModel() {
                 title = "",
                 description = "",
                 category = "",
-                trader = Trader("", ""),
+                trader = "",
                 tradeStatus = TradeStatus.Pending,
                 tradeHistoryArr = emptyList(),
                 imageRef = emptyList()
@@ -263,9 +254,6 @@ class TradeViewModel : ViewModel() {
                                     val history = tradeHistory(
                                         id = userSnapshot.getLong("id") ?:0L,
                                         title = userSnapshot.getString("title") ?: "",
-                                        tradeEnd = userSnapshot.getBoolean("tradeEnd")?:false,
-                                        isOpen = userSnapshot.getBoolean("live") ?:false,
-                                        win = userSnapshot.getBoolean("win") ?: false,
                                         imageRef = userSnapshot.get("imageRef") as? List<String> ?:emptyList()
                                     )
                                     postList.add(history)
@@ -321,16 +309,16 @@ class TradeViewModel : ViewModel() {
     }
     fun checkWinOrNot(user: String = "", tradeId: String = "0"): Boolean{
         getTradeById(tradeId)
-        return user == trader.name
+        return user == trader
     }
-    private fun updateTrade(trader: Trader, tradeId: String){
+    private fun updateTrade(trader: String, tradeId: String){
         var isOpen: Boolean = false
         db.collection("trade").document(tradeId).get()
             .addOnSuccessListener { documentSnapshot ->
                 _trade.value = documentSnapshot.toObject()
             }
         trade.value?.let { tradeData ->
-            isOpen = tradeData.isOpen
+            isOpen = tradeData.live
         }
         if(isOpen){
             _tUiState.update { currentState ->
@@ -351,8 +339,8 @@ class TradeViewModel : ViewModel() {
                     }
                     val traderR = hashMapOf(
                         "tradeId" to newTradeId,
-                        "name" to trader.name,
-                        "trade item" to trader.tradeItem
+                        "name" to trader,
+                        "trade item" to tradeItem
                     )
 
                     val tradeReference =db.collection("trade").document(tradeId)
@@ -362,8 +350,8 @@ class TradeViewModel : ViewModel() {
                             tradeReference
                                 .update(
                                     mapOf(
-                                        "trader" to trader.name,
-                                        "trade item" to trader.tradeItem
+                                        "trader" to trader,
+                                        "trade item" to tradeItem
                                     )
                                 )
                                 .addOnSuccessListener {
@@ -385,7 +373,7 @@ class TradeViewModel : ViewModel() {
     fun callTrade(trader: String = "test", tradeId: String){
         val tradeCall = tradeItem
         if(isCallNotValid()){
-            updateTrade(Trader(name = trader, tradeItem = tradeCall.toString()), tradeId = tradeId)
+            updateTrade(trader, tradeId = tradeId)
         }
     }
     fun rejectTrade(tradeId: String){

@@ -57,12 +57,11 @@ fun TradeHistoryScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> 
                     imageRef = tradeHistoryRec.imageRef.get(0),
                     id = tradeHistoryRec.id.toString(),
                     title = tradeHistoryRec.title,
-                    tradeEnd = tradeHistoryRec.tradeEnd,
                     onClickStartSource = {
                         navController.navigate(route = TaylorSwitchScreen.ReviewTrade.name+"/${tradeHistoryRec.id.toInt()}")
                         tradeViewModel.getTradeById((tradeHistoryRec.id.toInt()).toString())
                     },
-                    isOpen = tradeHistoryRec.isOpen,
+                    isOpen = tradeHistoryRec.live,
                     win = tradeViewModel.checkWinOrNot(user = "test", tradeId = tradeHistoryRec.id.toString())
                 )
             }
@@ -72,7 +71,7 @@ fun TradeHistoryScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> 
 
 @Composable
 fun ListItem(
-    imageRef: String = "", id: String = "", title:String, tradeEnd: Boolean = false,onClickStartSource: () -> Unit, isOpen: Boolean = false, win: Boolean = false
+    imageRef: String = "", id: String = "", title:String, onClickStartSource: () -> Unit, isOpen: Boolean = false, win: Boolean = false
 ){
     Row(){
         if (imageRef != ""){

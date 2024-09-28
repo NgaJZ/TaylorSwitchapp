@@ -107,7 +107,7 @@ class UserViewModel : ViewModel(){
     }
 
     // Sign-up logic with Firebase Authentication
-    fun signUp(email: String, password: String) {
+    fun signUp(email: String,username: String, password: String) {
         if (!validateForm()) return
 
         _signupState.value = SignupState.Loading
@@ -116,11 +116,15 @@ class UserViewModel : ViewModel(){
             firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        // Get the UID of the newly created user
+                        val userId = firebaseAuth.currentUser?.uid ?: ""
                         // Add user to Firestore (optional)
                         val user = hashMapOf(
-                            "email" to email
+                            "email" to email,
+                            "username" to username,
+                            "password" to password
                         )
-                        db.collection("user").document(email)
+                        db.collection("user").document(userId)
                             .set(user)
                             .addOnSuccessListener {
                                 Log.d("Firestore", "User added successfully!")

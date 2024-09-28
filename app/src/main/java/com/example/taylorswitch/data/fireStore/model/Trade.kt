@@ -7,9 +7,6 @@ data class Trade(
     val title: String,
     val description: String,
     val category: String,
-    val tradeItem: List<String> = emptyList(),
-    val trader: String,
-    val isOpen: Boolean = false,
-    val tradeStatus: TradeStatus = TradeStatus.Pending,
+    val live: Boolean = false,
     val imageRef: List<String> = emptyList()
 )
