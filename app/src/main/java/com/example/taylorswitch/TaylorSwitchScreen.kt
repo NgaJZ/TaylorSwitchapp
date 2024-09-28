@@ -90,6 +90,8 @@ import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
 import com.example.taylorswitch.ui.theme.AppViewModelProvider
+import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
+import com.example.taylorswitch.ui.user.profile.EditProfileScreen
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
@@ -100,7 +102,8 @@ enum class TaylorSwitchScreen() {
     PostBid,
     BidHistory,
     PostHistory,
-    Test
+    Test,
+    EditProfilePage
 }
 
 
@@ -147,8 +150,6 @@ fun TaylorSwitchApp(
 
 
 //    val histor
-
-
 
 
     // creating a list of all the tabs
@@ -258,43 +259,44 @@ fun TaylorSwitchApp(
                         }
                     )
 
-                NavigationDrawerItem(
-                    label = { Text("login") },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                    NavigationDrawerItem(
+                        label = { Text("login") },
+                        selected = false,
+                        onClick = {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
                             }
+                            navController.navigate(TaylorSwitchScreen.LoginPage.name)
                         }
-                        navController.navigate(TaylorSwitchScreen.LoginPage.name)
-                    }
-                )                // ...other drawer items
+                    )                // ...other drawer items
 
-                NavigationDrawerItem(
-                    label = { Text("Edit Profile") },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                    NavigationDrawerItem(
+                        label = { Text("Edit Profile") },
+                        selected = false,
+                        onClick = {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
                             }
+                            navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
                         }
-                        navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
-                    }
-                )
+                    )
+                }
             }
         }
     ) {
         Scaffold(
             topBar = {
-                if(currentDestination == TaylorSwitchScreen.ViewBid.name+ "/{auctionId}"){
+                if (currentDestination == TaylorSwitchScreen.ViewBid.name + "/{auctionId}") {
                     TaylorSwitchAppBar(
                         canNavigateBack = true,
-                        navigateUp = { navController.popBackStack()},
+                        navigateUp = { navController.popBackStack() },
                         onNavigationIconClick = {}
                     )
-                }else {
+                } else {
                     TaylorSwitchAppBar(
                         canNavigateBack = false,
                         navigateUp = { /* TODO: implement back navigation */ },
@@ -371,7 +373,7 @@ fun TaylorSwitchApp(
                     )
                 }
                 composable(TaylorSwitchScreen.Test.name) {
-                    MultiplePhotoPicker()
+//                    MultiplePhotoPicker()
                 }
                 composable(TaylorSwitchScreen.LoginPage.name) {
                     LoginScreen(
@@ -392,10 +394,10 @@ fun TaylorSwitchApp(
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                     )
                 }
-                composable(TaylorSwitchScreen.EditProfilePage.name){
+                composable(TaylorSwitchScreen.EditProfilePage.name) {
                     EditProfileScreen(
-                        viewModel =  userProfileViewModel,
-                        onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                        viewModel = userProfileViewModel,
+                        onBackClick = { navController.navigate(TaylorSwitchScreen.MainPage.name) },
                         navController = navController
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
@@ -404,6 +406,8 @@ fun TaylorSwitchApp(
             }
         }
     }
+
+
 }
 
 
@@ -414,7 +418,6 @@ fun GreetingPreview() {
 //        TaylorSwitchApp()
     }
 }
-
 
 
 @Composable
