@@ -12,3 +12,15 @@ data class User(
     val errorMessage: String? = null,
     val successMessage: String? = null
 )
+
+//data class UserUiState(
+//    val username: String = "",
+//    val email: String = "",
+//    val password: String = "",
+//    val phoneNumber: String = "",
+//    val dateOfBirth: String = "",
+//    val address: String = "",
+//    val errorMessage: String? = null,
+//    val isLoading: Boolean = false,
+//    val isSuccess: Boolean = false
+//)

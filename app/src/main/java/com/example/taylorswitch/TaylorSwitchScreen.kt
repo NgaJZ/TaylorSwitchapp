@@ -89,6 +89,7 @@ import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
+import com.example.taylorswitch.ui.theme.AppViewModelProvider
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
@@ -111,9 +112,11 @@ fun TaylorSwitchApp(
     ),
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
+    userProfileViewModel: UserProfileViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -255,20 +258,31 @@ fun TaylorSwitchApp(
                         }
                     )
 
-                    NavigationDrawerItem(
-                        label = { Text("login") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
+                NavigationDrawerItem(
+                    label = { Text("login") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
                             }
-                            navController.navigate(TaylorSwitchScreen.LoginPage.name)
                         }
-                    )
-                }
+                        navController.navigate(TaylorSwitchScreen.LoginPage.name)
+                    }
+                )                // ...other drawer items
 
+                NavigationDrawerItem(
+                    label = { Text("Edit Profile") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
+                    }
+                )
             }
         }
     ) {
@@ -305,11 +319,10 @@ fun TaylorSwitchApp(
             val uiState by viewModel.uiState.collectAsState()
             NavHost(
                 navController = navController,
-                startDestination = TaylorSwitchScreen.MainPage.name,
+                startDestination = TaylorSwitchScreen.Test.name,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(TaylorSwitchScreen.MainPage.name) {
-                    viewModel.getUserProfile()
                     HomeScreen(
                         viewModel = viewModel,
                         navController = navController
@@ -358,7 +371,7 @@ fun TaylorSwitchApp(
                     )
                 }
                 composable(TaylorSwitchScreen.Test.name) {
-//                    MultiplePhotoPicker()
+                    MultiplePhotoPicker()
                 }
                 composable(TaylorSwitchScreen.LoginPage.name) {
                     LoginScreen(
@@ -375,6 +388,15 @@ fun TaylorSwitchApp(
                     SignUpScreen(
                         viewModel = userViewModel,
                         navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                    )
+                }
+                composable(TaylorSwitchScreen.EditProfilePage.name){
+                    EditProfileScreen(
+                        viewModel =  userProfileViewModel,
+                        onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                        navController = navController
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                     )

@@ -148,6 +148,7 @@ fun LoginScreen(
             TextButton(onClick = onSignUpClick) {
                 Text(text = "Don’t have an account? Sign up")
             }
+
         }
     }
 
