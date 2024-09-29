@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.Listing
 import com.example.taylorswitch.data.TradeStatus
 import com.example.taylorswitch.data.TradeUiState
@@ -57,6 +58,7 @@ class TradeViewModel : ViewModel() {
 
     var imageUris by mutableStateOf<List<Uri>>(emptyList())
     var postImageUris by mutableStateOf<List<Uri>>(emptyList())
+    var requestImageUris by mutableStateOf<List<Uri>>(emptyList())
     var tradingUiState by mutableStateOf(TradingUiState())
         private set
 
@@ -208,6 +210,15 @@ class TradeViewModel : ViewModel() {
         }
     }
 
+    fun updateRequestImage(uris: List<Uri>){
+        requestImageUris = uris
+        _tUiState.update { currentState ->
+            currentState.copy(
+                imageUris = postImageUris
+            )
+        }
+    }
+
     fun postTrade(owner: String, context: Context): Boolean {
         getCurrentUid()
         var postSuccess: Boolean = false
@@ -263,12 +274,6 @@ class TradeViewModel : ViewModel() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-        }else{
-            Toast.makeText(
-                context,
-                "Please filled up all details",
-                Toast.LENGTH_SHORT
-            ).show()
         }
         return postSuccess
     }
@@ -387,66 +392,66 @@ class TradeViewModel : ViewModel() {
         getCurrentUid()
         return uid == trader
     }
-    private fun updateTrade(trader: Trader, tradeId: String){
+    private fun updateTrade(trader: Trader, tradeId: String, context: Context): Boolean {
         getCurrentUid()
+        var requestSuccess: Boolean = false
         var isOpen: Boolean = false
-        db.collection("trade").document(tradeId).get()
-            .addOnSuccessListener { documentSnapshot ->
-                _trade.value = documentSnapshot.toObject()
-                trade.value?.let { tradeData ->
-                    isOpen = tradeData.live
-                }
-                if(isOpen){
-                    _tUiState.update { currentState ->
-                        currentState.copy(
-                            trader = trader
-                        )
-                    }
-                    tradeItem = trader.tradeItem
-                    db.collection("trade").document(tradeId).collection("trader")
-                        .orderBy("tradeId", Query.Direction.DESCENDING)
-                        .limit(1)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            var newTradeId = 1
 
-                            if(!documents.isEmpty){
-                                val lastDocId = documents.documents[0].id
-                                newTradeId = (lastDocId.toIntOrNull() ?: 0) + 1
-                            }
-                            val traderR = hashMapOf(
-                                "tradeId" to newTradeId,
-                                "name" to trader,
-                                "trade item" to tradeItem
+        if(requestImageUris.isNotEmpty()){
+            db.collection("trade").document(tradeId).get()
+                .addOnSuccessListener { documentSnapshot ->
+                    val tradeData = documentSnapshot.toObject<Trade>()
+                    isOpen = tradeData?.live ?: false
+
+                    if(isOpen){
+                        _tUiState.update { currentState ->
+                            currentState.copy(
+                                trader = trader
                             )
-
-                            val tradeReference =db.collection("trade").document(tradeId)
-                            tradeReference
-                                .set("tradeArray" to FieldValue.arrayUnion(traderR))
-                                .addOnSuccessListener {
-                                    tradeReference
-                                        .set(
-                                            mapOf(
-                                                "trader" to trader,
-                                                "trade item" to tradeItem
-                                            ), SetOptions.merge()
-                                        )
-                                        .addOnSuccessListener {
-                                            db.collection("trade").document(uid)
-                                                .collection("UserTradeRec")
-                                                .document("userTrade")
-                                                .set(
-                                                    hashMapOf(
-                                                        "tradeRef" to FieldValue.arrayUnion(tradeReference)
-                                                    ), SetOptions.merge()
-                                                )
-                                        }
-                                    Log.d("document", "CREATED")
-                                }
                         }
+                                val traderR = hashMapOf(
+                                    "name" to trader.name,
+                                    "trade item" to trader.tradeItem
+                                )
+
+                                val tradeReference =db.collection("trade").document(tradeId)
+                                tradeReference
+                                    .set(traderR, SetOptions.merge())
+                                    .addOnSuccessListener {
+                                        requestImageUris.forEach { uri ->
+                                            uri?.let {
+                                                StorageUtil.uploadToStorage(
+                                                    uri = it,
+                                                    context = context,
+                                                    type = "image",
+                                                    postReference = db.collection("trade"),
+                                                    postId = tradeId
+                                                )
+                                            }
+                                        }
+                                        db.collection("user").document(uid).collection("UserTradeRec").document("userTrade")
+                                            .set(hashMapOf("tradeRef" to FieldValue.arrayUnion(tradeReference)), SetOptions.merge())
+                                        Log.d("document", "CREATED")
+                                        requestSuccess = true
+                                    }
+                            }
+                    }.addOnFailureListener {
+                        Toast.makeText(
+                            context,
+                            "upload failed",
+                            Toast.LENGTH_SHORT
+                        ).show()
                 }
-            }
+        }else{
+            Toast.makeText(
+                context,
+                "Please filled up all details",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+        return requestSuccess
     }
+
     fun isCallNotValid(): Boolean {
         val tradeCall = tradeItem
         if (tradeCall.isNotEmpty()){
@@ -454,12 +459,12 @@ class TradeViewModel : ViewModel() {
         }
         return false
     }
-    fun callTrade(tradeId: String){
+    fun callTrade(tradeId: String, context: Context){
         getCurrentUid()
         val tradeCall = tradeItem
         if(isCallNotValid()){
             if(owner != uid){
-                updateTrade(Trader(name = uid, tradeItem = tradeCall), tradeId = tradeId)
+                updateTrade(Trader(name = uid, tradeItem = tradeCall), tradeId = tradeId, context = context)
             }
         }
     }

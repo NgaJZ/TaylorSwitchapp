@@ -91,7 +91,6 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 import com.example.taylorswitch.ui.Trade.uiScreen.HomepageScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.PostTradeItemScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.ReviewTradeRequest
-import com.example.taylorswitch.ui.Trade.uiScreen.TradeHistoryScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeListScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeRequestScreen
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
@@ -282,21 +281,6 @@ fun TaylorSwitchApp(
                             },
                             label = {
                                 Text(text = "Bid History")
-                            },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.BidRecord.name)
-
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = {
-                                Text(text = "Bid Record")
                             },
                             selected = false,
                             onClick = {
@@ -556,16 +540,17 @@ fun TaylorSwitchApp(
                                         if (isClosed) open() else close()
                                     }
                                 }
-                            }
-                        )
-                    }
-                    else {
-                        TaylorSwitchAppBar(
-                            title = currentDestination.toString(),
-                            canNavigateBack = true,
-                            navigateUp = { navController.popBackStack() },
-                            onNavigationIconClick = {}
-                        )
+                            )
+                        }
+
+                        else -> {
+                            TaylorSwitchAppBar(
+                                title = currentDestination.toString(),
+                                canNavigateBack = true,
+                                navigateUp = { navController.popBackStack() },
+                                onNavigationIconClick = {}
+                            )
+                        }
                     }
                 },
                 bottomBar = {
@@ -704,7 +689,8 @@ fun TaylorSwitchApp(
                             tradeId = tradeId,
                             tradeUiState = tUiState,
                             tradeViewModel = tradeViewModel,
-                            navController = navController
+                            navController = navController,
+                            context = context
                         )
                     }
                     composable(TaylorSwitchScreen.ReviewTrade.name + "/{tradeId}") { backStackEntry ->
@@ -723,15 +709,6 @@ fun TaylorSwitchApp(
                         tradeViewModel.getUserHistoryArray("userPost", "postRef")
                         TradeListScreen(
                             tradeViewModel = tradeViewModel,
-                            list = tUiState.tradeHistoryArr,
-                            navController = navController
-                        )
-                    }
-                    composable(TaylorSwitchScreen.TradeHistory.name) {
-                        tradeViewModel.getUserHistoryArray("userTrade", "tradeRef")
-                        TradeHistoryScreen(
-                            tradeViewModel = tradeViewModel,
-                            list = tUiState.tradeHistoryArr,
                             navController = navController
                         )
                     }
