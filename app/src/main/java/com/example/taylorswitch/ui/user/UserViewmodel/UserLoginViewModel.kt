@@ -131,8 +131,8 @@ class UserLoginViewModel : ViewModel() {
                     _appUiState.update { currentState ->
                         currentState.copy(
                             uid = data["uid"] as String? ?:"",
-                            username = data["username"] as String? ?: ""
-
+                            username = data["username"] as String? ?: "",
+                            userImage = data["profileImageUrl"] as String? ?: ""
                         )
                     }
                 }

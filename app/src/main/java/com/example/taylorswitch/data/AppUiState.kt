@@ -24,5 +24,6 @@ data class MiniFabItems(
 
 data class AppUiState(
     val uid: String = "",
-    val username: String = ""
+    val username: String = "",
+    val userImage: String = ""
 )

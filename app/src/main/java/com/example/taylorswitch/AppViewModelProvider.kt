@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
@@ -31,6 +32,9 @@ object AppViewModelProvider {
         }
         initializer {
             UserViewModel()
+        }
+        initializer {
+            TopUpViewModel()
         }
 
     }

@@ -387,6 +387,7 @@ class TradeViewModel : ViewModel() {
         getCurrentUid()
         return uid == trader
     }
+
     private fun updateTrade(trader: Trader, tradeId: String){
         getCurrentUid()
         var isOpen: Boolean = false

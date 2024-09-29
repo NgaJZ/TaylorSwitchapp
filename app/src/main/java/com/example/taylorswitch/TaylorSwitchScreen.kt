@@ -33,13 +33,16 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.SyncAlt
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.PostAdd
 import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.Button
 import androidx.compose.material.icons.outlined.SyncAlt
+import androidx.compose.material.icons.outlined.Wallet
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -64,6 +67,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,6 +78,7 @@ import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.rememberImagePainter
 import com.example.taylorswitch.data.MiniFabItems
 import com.example.taylorswitch.data.TabBarItem
 import com.example.taylorswitch.data.TopBarItem
@@ -91,6 +96,7 @@ import com.example.taylorswitch.ui.Trade.uiScreen.ReviewTradeRequest
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeHistoryScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeListScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeRequestScreen
+import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
@@ -147,7 +153,7 @@ fun TaylorSwitchApp(
 
     val tradeTab = TabBarItem(
         title = "Trade",
-        path = TaylorSwitchScreen.PostBid.name,
+        path = TaylorSwitchScreen.TradeHomePage.name,
         selectedIcon = Icons.Filled.SyncAlt,
         unselectedIcon = Icons.Outlined.SyncAlt
     )
@@ -181,12 +187,8 @@ fun TaylorSwitchApp(
         title = "Taylor Switch"
     )
 
-
-//    val histor
-
-
     // creating a list of all the tabs
-    val tabBarItems = listOf(tradeTab, bidTab)
+    val tabBarItems = listOf(bidTab, tradeTab)
     val bidBarItems = listOf(bidRTab, bidPTab)
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -215,30 +217,23 @@ fun TaylorSwitchApp(
                                 .padding(start = 10.dp),
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Image(
-                                painter = painterResource(R.drawable.ic_launcher_foreground),
-                                contentDescription = "user"
-                            )
-                            Text(text = appUiState.username, fontSize = 15.sp)
-                        }
-                    }
-
-                NavigationDrawerItem(
-                    label = { Text("My Wallet") },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                            if(appUiState.userImage != ""){
+                                Image(
+                                    painter = rememberImagePainter(data = appUiState.userImage),
+                                    contentDescription = "user"
+                                )
+                            }else {
+                                Image(
+                                    painter = painterResource(R.drawable.ic_launcher_foreground),
+                                    contentDescription = "user"
+                                )
                             }
+                            Text(text = appUiState.username, fontSize = 15.sp, fontWeight = FontWeight(400))
                         }
-                        navController.navigate(TaylorSwitchScreen.WalletPage.name)
                     }
-                )
-                    Column() {
 
-                        Text("Bid History", modifier = Modifier.padding(16.dp))
-                        HorizontalDivider()
+
+                    Column() {
                         NavigationDrawerItem(
                             icon = {
                                 Icon(
@@ -282,9 +277,13 @@ fun TaylorSwitchApp(
                             }
                         )
                         NavigationDrawerItem(
-                            label = {
-                                Text(text = "Bid Record")
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.ManageSearch,
+                                    contentDescription = "Trade history"
+                                )
                             },
+                            label = { Text("Trade History") },
                             selected = false,
                             onClick = {
                                 scope.launch {
@@ -292,51 +291,16 @@ fun TaylorSwitchApp(
                                         if (isClosed) open() else close()
                                     }
                                 }
-                                navController.navigate(TaylorSwitchScreen.BidRecord.name)
-
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
                             }
                         )
                         NavigationDrawerItem(
-                            label = { Text("test") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.Test.name)
-                            }
-                        )
-
-                        NavigationDrawerItem(
-                            label = { Text("login") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.LoginPage.name)
-                            }
-                        )
-
-                        NavigationDrawerItem(
-                            label = { Text("logout") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                userLoginViewModel.signOut()
-                                navController.navigate(TaylorSwitchScreen.LoginPage.name)
-                            }
-                        )                // ...other drawer items
-
-                        NavigationDrawerItem(
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Edit,
+                                    contentDescription = "edit"
+                                )
+                            },
                             label = { Text("Edit Profile") },
                             selected = false,
                             onClick = {
@@ -349,7 +313,11 @@ fun TaylorSwitchApp(
                             }
                         )
                         NavigationDrawerItem(
-                            label = { Text("Trade Home Page") },
+                            icon = {
+                                Icon(imageVector = Icons.Outlined.Wallet,
+                                    contentDescription = "wallet")
+                            },
+                            label = { Text("My Wallet") },
                             selected = false,
                             onClick = {
                                 scope.launch {
@@ -357,23 +325,17 @@ fun TaylorSwitchApp(
                                         if (isClosed) open() else close()
                                     }
                                 }
-                                navController.navigate(TaylorSwitchScreen.TradeHomePage.name)
+                                navController.navigate(TaylorSwitchScreen.WalletPage.name)
                             }
                         )
                         NavigationDrawerItem(
-                                label = { Text("Post Trade") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            navController.navigate(TaylorSwitchScreen.PostTrade.name)
-                        }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("Trade List") },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Logout,
+                                    contentDescription = "logout"
+                                )
+                            },
+                            label = { Text("logout") },
                             selected = false,
                             onClick = {
                                 scope.launch {
@@ -381,19 +343,8 @@ fun TaylorSwitchApp(
                                         if (isClosed) open() else close()
                                     }
                                 }
-                                navController.navigate(TaylorSwitchScreen.TradeList.name)
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("Trade History") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                userLoginViewModel.signOut()
+                                navController.navigate(TaylorSwitchScreen.LoginPage.name)
                             }
                         )
                     }
@@ -402,148 +353,160 @@ fun TaylorSwitchApp(
         ) {
             Scaffold(
                 topBar = {
-                    if (currentDestination == TaylorSwitchScreen.ViewBid.name + "/{auctionId}") {
-                        TaylorSwitchAppBar(
-                            title = "Bid",
-                            canNavigateBack = true,
-                            navigateUp = { navController.popBackStack() },
-                            onNavigationIconClick = {}
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.BidMainPage.name){
-                        TaylorSwitchAppBar(
-                            title = "Taylor Switch",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                            }
-                        )
-                    }else if (currentDestination == TaylorSwitchScreen.EditProfilePage.name) {
-                        TaylorSwitchAppBar(
-                            title = "Edit Profile",
-                            canNavigateBack = true,
-                            navigateUp = { navController.popBackStack() },
-                            onNavigationIconClick = {}
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.BidPost.name){
-                        TaylorSwitchAppBar(
-                            title = "Bid Post",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
+                    when (currentDestination) {
+                        TaylorSwitchScreen.ViewBid.name + "/{auctionId}" -> {
+                            TaylorSwitchAppBar(
+                                title = "Bid",
+                                canNavigateBack = true,
+                                navigateUp = { navController.popBackStack() },
+                                onNavigationIconClick = {}
+                            )
+                        }
+                        TaylorSwitchScreen.BidMainPage.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Taylor Switch",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {scope.launch {
                                     drawerState.apply {
                                         if (isClosed) open() else close()
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.BidRecord.name){
-                        TaylorSwitchAppBar(
-                            title = "Bid Record",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                                }
+                            )
+                        }
+                        TaylorSwitchScreen.EditProfilePage.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Edit Profile",
+                                canNavigateBack = true,
+                                navigateUp = { navController.popBackStack() },
+                                onNavigationIconClick = {}
+                            )
+                        }
+                        TaylorSwitchScreen.BidPost.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Bid Post",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.TradeHomePage.name){
-                        TaylorSwitchAppBar(
-                            title = "Taylor Switch",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            )
+                        }
+                        TaylorSwitchScreen.BidRecord.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Bid Record",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.PostTrade.name){
-                        TaylorSwitchAppBar(
-                            title = "Post Trade",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            )
+                        }
+                        TaylorSwitchScreen.TradeHomePage.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Taylor Switch",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.RequestTrade.name + "/{auctionId}"){
-                        TaylorSwitchAppBar(
-                            title = "Trade",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            )
+                        }
+                        TaylorSwitchScreen.PostTrade.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Post Trade",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.ReviewTrade.name + "/{auctionId}"){
-                        TaylorSwitchAppBar(
-                            title = "Trade",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            )
+                        }
+                        TaylorSwitchScreen.RequestTrade.name + "/{auctionId}" -> {
+                            TaylorSwitchAppBar(
+                                title = "Trade",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.TradeList.name){
-                        TaylorSwitchAppBar(
-                            title = "Trade List",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            )
+                        }
+                        TaylorSwitchScreen.ReviewTrade.name + "/{auctionId}" -> {
+                            TaylorSwitchAppBar(
+                                title = "Trade",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }else if(currentDestination == TaylorSwitchScreen.TradeHistory.name){
-                        TaylorSwitchAppBar(
-                            title = "Trade Record",
-                            canNavigateBack = false,
-                            navigateUp = {},
-                            onNavigationIconClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            )
+                        }
+                        TaylorSwitchScreen.TradeList.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Trade List",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
-                        )
-                    }
-                    else {
-                        TaylorSwitchAppBar(
-                            title = currentDestination.toString(),
-                            canNavigateBack = true,
-                            navigateUp = { navController.popBackStack() },
-                            onNavigationIconClick = {}
-                        )
+                            )
+                        }
+                        TaylorSwitchScreen.TradeHistory.name -> {
+                            TaylorSwitchAppBar(
+                                title = "Trade Record",
+                                canNavigateBack = false,
+                                navigateUp = {},
+                                onNavigationIconClick = {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        else -> {
+                            TaylorSwitchAppBar(
+                                title = currentDestination.toString(),
+                                canNavigateBack = true,
+                                navigateUp = { navController.popBackStack() },
+                                onNavigationIconClick = {}
+                            )
+                        }
                     }
                 },
                 bottomBar = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
                         TaylorSwitchBottomBar(
                             tabBarItems = tabBarItems,
                             navController = navController
@@ -556,7 +519,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 floatingActionButton = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
                         MainUI(navController = navController)
                     }
                 }
@@ -600,7 +563,6 @@ fun TaylorSwitchApp(
 //                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
-                            bidUiState = uiState,
                             bidViewModel = bidViewModel,
                             navController = navController
                         )
@@ -629,9 +591,7 @@ fun TaylorSwitchApp(
 //                    MultiplePhotoPicker()
 //                        SignUpScreen(userViewModel, navController)
                     }
-                    composable(TaylorSwitchScreen.PostTrade.name){
-                        PostTradeItemScreen(tradeViewModel,{})
-                    }
+
                     composable(TaylorSwitchScreen.LoginPage.name) {
                         LoginScreen(
                             viewModel = userLoginViewModel,
