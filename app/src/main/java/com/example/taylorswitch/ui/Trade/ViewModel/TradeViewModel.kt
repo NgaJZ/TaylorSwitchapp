@@ -69,9 +69,9 @@ class TradeViewModel : ViewModel() {
     private val firebaseState = FirebaseStorage.getInstance()
     val userFireStorePath = db.collection("user").document("0").collection("UserTradeRec")
 
-//    init {
-//        getTradeList()
-//    }
+    init {
+        getTradeList()
+    }
 
     fun getUserProfileByUid(uid: String){
         db.collection("user").document(uid)
