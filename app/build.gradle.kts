@@ -88,6 +88,7 @@ dependencies {
 //    implementation(libs.androidx.foundation.layout.android)
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.identity.jvm)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
