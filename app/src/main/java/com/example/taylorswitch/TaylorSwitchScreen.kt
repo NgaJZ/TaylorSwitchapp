@@ -619,8 +619,6 @@ fun TaylorSwitchApp(
                             onSignUpClick = {
                                 navController.navigate(TaylorSwitchScreen.SignUpPage.name)
                             }
-//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                         )
                     }
                     composable(TaylorSwitchScreen.EditProfilePage.name) {
