@@ -195,27 +195,6 @@ fun ReviewTradeRequestPortrait(
                         fontWeight = FontWeight(600)
                     )
                 )
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (tradeUiState.trader.tradeItem.isNotEmpty()) {
-                        items(tradeUiState.trader.tradeItem) { imageUrl ->
-                            ImageCardTR(imageUrl, modifier = Modifier.fillMaxHeight())
-                        }
-                    }else{
-                        item {
-                            Image(
-                                modifier = Modifier
-                                    .width(380.dp)
-                                    .fillMaxHeight(),
-                                painter = painterResource(R.drawable.image),
-                                contentDescription = "Image Description",
-                                contentScale = ContentScale.FillBounds
-                            )
-                        }
-                    }
-                }
             }
             Column (modifier = Modifier.fillMaxWidth()){
                 Row (
@@ -447,27 +426,6 @@ fun ReviewTradeRequestLandscape(
                         fontWeight = FontWeight(600)
                     )
                 )
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (tradeUiState.trader.tradeItem.isNotEmpty()) {
-                        items(tradeUiState.trader.tradeItem) { imageUrl ->
-                            ImageCardTR(imageUrl, modifier = Modifier.fillMaxHeight())
-                        }
-                    }else{
-                        item {
-                            Image(
-                                modifier = Modifier
-                                    .width(380.dp)
-                                    .fillMaxHeight(),
-                                painter = painterResource(R.drawable.image),
-                                contentDescription = "Image Description",
-                                contentScale = ContentScale.FillBounds
-                            )
-                        }
-                    }
-                }
             }
             Column (modifier = Modifier.fillMaxWidth()){
                 Row (

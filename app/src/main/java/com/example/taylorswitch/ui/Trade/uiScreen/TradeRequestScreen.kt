@@ -1,6 +1,7 @@
 package com.example.taylorswitch.ui.Trade.uiScreen
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,15 +28,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -60,7 +64,8 @@ fun TradeRequestScreen(
     tradeId: String?,
     tradeUiState: TradeUiState,
     tradeViewModel: TradeViewModel = viewModel(),
-    navController: NavHostController
+    navController: NavHostController,
+    context: Context
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
@@ -68,13 +73,15 @@ fun TradeRequestScreen(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
             tradeViewModel = tradeViewModel,
-            navController = navController
+            navController = navController,
+            context = context
         )
         else -> TradeRequestScreenLandscape(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
             tradeViewModel = tradeViewModel,
-            navController = navController
+            navController = navController,
+            context = context
         )
     }
 }
@@ -86,7 +93,8 @@ fun TradeRequestScreenPortrait(
     tradeId: String?,
     tradeUiState: TradeUiState,
     tradeViewModel: TradeViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    context: Context
 ){
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
@@ -252,8 +260,8 @@ fun TradeRequestScreenPortrait(
                     if (tradeUiState.live){
                         Button(
                             onClick = {
-                                tradeViewModel.callTrade(tradeId = tradeId.toString())
-                                navController.navigate(TaylorSwitchScreen.ReviewTrade.name)
+                                tradeViewModel.callTrade(tradeId = tradeId.toString(), context)
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
                                       },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
@@ -270,7 +278,7 @@ fun TradeRequestScreenPortrait(
                     }else{
                         Button(
                             onClick = {
-                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                tradeViewModel.callTrade(tradeId = tradeId.toString(), context)
                                 navController.navigate(TaylorSwitchScreen.TradeList.name)
                                       },
                             shape = RoundedCornerShape(size = 8.dp),
@@ -298,7 +306,8 @@ fun TradeRequestScreenLandscape(
     tradeId: String?,
     tradeUiState: TradeUiState,
     tradeViewModel: TradeViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    context: Context
 ){
     val lazyListState = rememberLazyListState()
     val multiplePhotoPicker = rememberLauncherForActivityResult(
@@ -468,6 +477,30 @@ fun TradeRequestScreenLandscape(
                     }
                 }
             }
+            Row (
+                modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                    ){
+                OutlinedTextField(
+                    value = tradeUiState.title,
+                    onValueChange = { tradeViewModel.updateListingTitle(it) },
+                    label = {Text("Trade item")},
+                    modifier = Modifier
+                        .alpha(0.5f)
+                        .padding(0.dp)
+                        .width(408.dp)
+                        .height(60.dp),
+                    trailingIcon = {
+                        IconButton(onClick = {tradeViewModel.updateListingTitle("")}){
+                            Icon(
+                                imageVector = Icons.Outlined.Clear,
+                                contentDescription = "Clear Title"
+                            )
+                        }
+                    }
+                )
+            }
             Column (modifier = Modifier.fillMaxWidth()){
                 Row (
                     modifier = Modifier
@@ -480,7 +513,7 @@ fun TradeRequestScreenLandscape(
                     if (tradeUiState.live){
                         Button(
                             onClick = {
-                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                tradeViewModel.callTrade(tradeId = tradeId.toString(), context)
                                 navController.navigate(TaylorSwitchScreen.TradeList.name)
                             },
                             shape = RoundedCornerShape(size = 8.dp),
@@ -498,7 +531,7 @@ fun TradeRequestScreenLandscape(
                     }else{
                         Button(
                             onClick = {
-                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                tradeViewModel.callTrade(tradeId = tradeId.toString(), context)
                                 navController.navigate(TaylorSwitchScreen.TradeList.name)
                             },
                             shape = RoundedCornerShape(size = 8.dp),
