@@ -23,7 +23,7 @@ import androidx.navigation.NavController
 import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 
 @Composable //viewModel: TopUpViewModel, currentBalance: String,navController: NavController
-fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
+fun TopUpScreen(viewModel: TopUpViewModel, navController: NavController) {
     val uiState = viewModel.uiState
 
     Column(
@@ -31,6 +31,11 @@ fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Display current balance
+        Text(text = "Current Balance: RM ${uiState.balance}")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Input for custom top-up amount
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -81,7 +86,7 @@ fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Button( //viewModel.topUp(currentBalance)
-                onClick = { viewModel.topUp(uiState.balance) },
+                onClick = { viewModel.topUp(navController) },
                 modifier = Modifier.weight(1f),
                 //colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
                 colors = ButtonDefaults.buttonColors(Color.Green)

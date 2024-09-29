@@ -80,6 +80,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.activity
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.rememberImagePainter
@@ -117,7 +118,6 @@ enum class TaylorSwitchScreen() {
     SignUpPage,
     EditProfilePage,
     WalletPage,
-    TopUpScreen,
     MainPage,
     BidMainPage,
     ViewBid,
@@ -130,7 +130,8 @@ enum class TaylorSwitchScreen() {
     RequestTrade,
     ReviewTrade,
     TradeList,
-    TradeHistory
+    TradeHistory,
+    TopUpPage
 }
 
 
@@ -537,7 +538,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 floatingActionButton = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
                         MainUI(navController = navController)
                     }
                 }
@@ -688,6 +689,21 @@ fun TaylorSwitchApp(
                             navController = navController
                         )
                     }
+                    composable(TaylorSwitchScreen.WalletPage.name) {
+                        walletViewModel.fetchWalletData()
+                        WalletScreen(
+                            viewModel = walletViewModel,
+                            navController = navController,
+                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpPage.name)}
+                        )
+                    }
+                    composable(TaylorSwitchScreen.TopUpPage.name) {
+//                        walletViewModel.getUserHistoryArray("userTrade", "tradeRef")
+                        TopUpScreen(
+                            viewModel = topUpViewModel,
+                            navController = navController
+                        )
+                    }
                 }
             }
         }
@@ -749,7 +765,7 @@ fun TaylorSwitchApp(
                     composable(TaylorSwitchScreen.EditProfilePage.name){
                         EditProfileScreen(
                             viewModel =  userProfileViewModel,
-                            onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            onBackClick = {navController.popBackStack()},
                             navController = navController
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
@@ -761,10 +777,10 @@ fun TaylorSwitchApp(
                             //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
                             navController = navController,
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpScreen.name)}         // Function to handle "Sign Up" navigation
+                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpPage.name)}         // Function to handle "Sign Up" navigation
                         )
                     }
-                    composable(TaylorSwitchScreen.WalletPage.name){
+                    composable(TaylorSwitchScreen.TopUpPage.name){
                         TopUpScreen(
                             viewModel =  topUpViewModel,
                             //currentBalance = topUpViewModel.topUp(currentBalance).toString(),
@@ -851,4 +867,6 @@ fun ItemUi(icon: ImageVector, title: String, route: String, navController: NavHo
             Icon(imageVector = icon, contentDescription = "")
         }
     }
+
+
 }

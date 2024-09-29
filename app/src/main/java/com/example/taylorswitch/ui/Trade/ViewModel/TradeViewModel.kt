@@ -69,9 +69,9 @@ class TradeViewModel : ViewModel() {
     private val firebaseState = FirebaseStorage.getInstance()
     val userFireStorePath = db.collection("user").document("0").collection("UserTradeRec")
 
-    init {
+//    init {
 //        getTradeList()
-    }
+//    }
 
     fun getUserProfileByUid(uid: String){
         db.collection("user").document(uid)
@@ -387,7 +387,6 @@ class TradeViewModel : ViewModel() {
         getCurrentUid()
         return uid == trader
     }
-
     private fun updateTrade(trader: Trader, tradeId: String){
         getCurrentUid()
         var isOpen: Boolean = false

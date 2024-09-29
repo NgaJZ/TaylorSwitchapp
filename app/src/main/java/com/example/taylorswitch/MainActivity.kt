@@ -17,6 +17,10 @@ class MainActivity : ComponentActivity(){
         setContent{
             TaylorSwitchTheme{
                 TaylorSwitchApp()
+//                TimePickerExamples()
+//                DrawerDemo()
+//                DialWithDialogExample({},{})
+
             }
         }
     }
