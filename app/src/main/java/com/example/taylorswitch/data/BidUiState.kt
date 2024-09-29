@@ -1,5 +1,7 @@
 package com.example.taylorswitch.data
 
+import android.net.Uri
+
 enum class ListingStage{
     Live,
     End
@@ -57,7 +59,8 @@ data class BidUiState(
     val stage: ListingStage = ListingStage.Live,
     val historyRecArr: List<historyRec> = emptyList(),
     val imageRef: List<String> = emptyList(),
-    val posterName: String = ""
+    val posterName: String = "",
+    val callAmount: String =""
 )
 
 
@@ -82,6 +85,7 @@ data class PostUiState(
     val stage: ListingStage = ListingStage.Live,
     val historyRecArr: List<historyRec> = emptyList(),
     val imageRef: List<String> = emptyList(),
+    val imageUris: List<Uri> = emptyList()
 )
 
 data class PosterUiState(

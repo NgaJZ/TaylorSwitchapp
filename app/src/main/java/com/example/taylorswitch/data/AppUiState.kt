@@ -18,5 +18,11 @@ data class TopBarItem(
 
 data class MiniFabItems(
     val icon: ImageVector,
-    val title: String
+    val title: String,
+    val route: String
+)
+
+data class AppUiState(
+    val uid: String = "",
+    val username: String = ""
 )

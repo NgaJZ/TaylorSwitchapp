@@ -54,6 +54,7 @@ import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.stringResource
@@ -70,9 +71,9 @@ fun BidSession(
 ) {
 
     var timeRemainingInMillis by remember { mutableStateOf(0L) }
-
+    val lazyListState = rememberLazyListState()
     LaunchedEffect(Unit) {
-
+        bidViewModel.getAuctionById("$auctionId")
         delay(2000L)
         // Calculate the initial time left
         timeRemainingInMillis =
@@ -101,17 +102,18 @@ fun BidSession(
             auctionId = auctionId,
             bidUiState = bidUiState,
             bidViewModel = bidViewModel,
-            navController = navController
+            navController = navController,
+            lazyListState = lazyListState
         )
 
         else -> BidSessionLandscape(
             auctionId = auctionId,
             bidUiState = bidUiState,
             bidViewModel = bidViewModel,
-            navController = navController
+            navController = navController,
+            lazyListState = lazyListState
         )
     }
-
 }
 
 @Composable
@@ -119,7 +121,8 @@ fun BidSessionPortrait(
     bidViewModel: BidViewModel,
     auctionId: String?,
     bidUiState: BidUiState,
-    navController: NavHostController
+    navController: NavHostController,
+    lazyListState: LazyListState
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -135,7 +138,10 @@ fun BidSessionPortrait(
                 LazyRow(
                     modifier = Modifier
                         .fillMaxHeight(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    state = lazyListState,  // Pass the list state
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    flingBehavior = rememberSnapFlingBehavior(lazyListState)
                 ) {
                     if (bidUiState.imageRef.isNotEmpty()) {
                         items(bidUiState.imageRef) { imageUrl ->
@@ -359,7 +365,7 @@ fun BidSessionPortrait(
                 OutlinedTextField(
                     modifier = Modifier
                         .width(100.dp),
-                    value = bidViewModel.bidCallAmount,
+                    value = bidUiState.callAmount,
                     onValueChange = { bidViewModel.updateBidCall(it) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     label = {
@@ -385,7 +391,7 @@ fun BidSessionPortrait(
                     Button(
                         onClick = {
                             bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidHistory.name)
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
                         },
                         shape = RoundedCornerShape(size = 8.dp),
                         enabled = false
@@ -403,7 +409,7 @@ fun BidSessionPortrait(
                     Button(
 //                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
                         onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidHistory.name) },
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
                         shape = RoundedCornerShape(size = 8.dp),
                         enabled = true
                     ) {
@@ -428,9 +434,10 @@ fun BidSessionLandscape(
     bidViewModel: BidViewModel,
     auctionId: String?,
     bidUiState: BidUiState,
-    navController: NavHostController
+    navController: NavHostController,
+    lazyListState: LazyListState
 ) {
-    val lazyListState = rememberLazyListState()
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -542,7 +549,9 @@ fun BidSessionLandscape(
 
 
                 Button(
-                    onClick = {},
+                    onClick = {
+                        //todo: navigate to profile
+                    },
                     enabled = true
                 ) {
                     Text(
@@ -703,7 +712,7 @@ fun BidSessionLandscape(
                 OutlinedTextField(
                     modifier = Modifier
                         .width(100.dp),
-                    value = bidViewModel.bidCallAmount,
+                    value = bidUiState.callAmount,
                     onValueChange = { bidViewModel.updateBidCall(it) },
                     label = {
                         if (bidViewModel.isCallNotValid()) {
@@ -730,7 +739,7 @@ fun BidSessionLandscape(
                 if(bidUiState.live){
                     Button(
                         onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidHistory.name) },
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
                         shape = RoundedCornerShape(size = 8.dp),
                         enabled = true
                     ) {
@@ -747,7 +756,7 @@ fun BidSessionLandscape(
                     Button(
                         onClick = {
                             bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidHistory.name)
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
                         },
                         shape = RoundedCornerShape(size = 8.dp),
                         enabled = false

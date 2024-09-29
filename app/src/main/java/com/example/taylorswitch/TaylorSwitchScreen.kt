@@ -13,7 +13,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,14 +31,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.ManageSearch
+import androidx.compose.material.icons.outlined.PostAdd
 import androidx.compose.material.icons.outlined.SyncAlt
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -56,7 +56,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,23 +84,26 @@ import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostScreen
+import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
+import com.example.taylorswitch.ui.Trade.uiScreen.PostTradeItemScreen
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
-import com.example.taylorswitch.ui.theme.AppViewModelProvider
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
 import kotlinx.coroutines.launch
+import okhttp3.Route
 
 enum class TaylorSwitchScreen() {
     LoginPage,
     SignUpPage,
-    MainPage,
+    BidMainPage,
     ViewBid,
     PostBid,
-    BidHistory,
-    PostHistory,
+    BidRecord,
+    BidPost,
+    PostTrade,
     Test,
     EditProfilePage
 }
@@ -110,12 +112,13 @@ enum class TaylorSwitchScreen() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaylorSwitchApp(
-    viewModel: BidViewModel = viewModel(
+    bidViewModel: BidViewModel = viewModel(
 //        factory = AppViewModelProvider.Factory
     ),
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
     userProfileViewModel: UserProfileViewModel = viewModel(),
+    tradeViewModel: TradeViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -133,9 +136,22 @@ fun TaylorSwitchApp(
     )
     val bidTab = TabBarItem(
         title = "Bid",
-        path = TaylorSwitchScreen.MainPage.name,
+        path = TaylorSwitchScreen.BidMainPage.name,
         selectedIcon = Icons.Filled.Gavel,
         unselectedIcon = Icons.Outlined.Gavel
+    )
+
+    val bidRTab = TabBarItem(
+        title = "Bid",
+        path = TaylorSwitchScreen.BidRecord.name,
+        selectedIcon = Icons.Filled.Gavel,
+        unselectedIcon = Icons.Outlined.Gavel
+    )
+    val bidPTab = TabBarItem(
+        title = "Post",
+        path = TaylorSwitchScreen.BidPost.name,
+        selectedIcon = Icons.Filled.PostAdd,
+        unselectedIcon = Icons.Outlined.PostAdd
     )
 
     val bidSessionTB = TopBarItem(
@@ -154,10 +170,11 @@ fun TaylorSwitchApp(
 
     // creating a list of all the tabs
     val tabBarItems = listOf(tradeTab, bidTab)
+    val bidBarItems = listOf(bidRTab, bidPTab)
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route
-
+    val appUiState by userLoginViewModel.appUiState.collectAsState()
 
     if (!(currentDestination == TaylorSwitchScreen.LoginPage.name || currentDestination == TaylorSwitchScreen.SignUpPage.name)) {
         ModalNavigationDrawer(
@@ -184,7 +201,7 @@ fun TaylorSwitchApp(
                                 painter = painterResource(R.drawable.ic_launcher_foreground),
                                 contentDescription = "user"
                             )
-                            Text(text = viewModel.username, fontSize = 15.sp)
+                            Text(text = appUiState.username, fontSize = 15.sp)
                         }
                     }
                     Column() {
@@ -192,8 +209,14 @@ fun TaylorSwitchApp(
                         Text("Bid History", modifier = Modifier.padding(16.dp))
                         HorizontalDivider()
                         NavigationDrawerItem(
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Home,
+                                    contentDescription = "home"
+                                )
+                            },
                             label = {
-                                Text(text = "Bid Posting")
+                                Text(text = "Home Page")
                             },
                             selected = false,
                             onClick = {
@@ -202,7 +225,28 @@ fun TaylorSwitchApp(
                                         if (isClosed) open() else close()
                                     }
                                 }
-                                navController.navigate(TaylorSwitchScreen.PostHistory.name)
+                                navController.navigate(TaylorSwitchScreen.BidMainPage.name)
+
+                            }
+                        )
+                        NavigationDrawerItem(
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.ManageSearch,
+                                    contentDescription = "search"
+                                )
+                            },
+                            label = {
+                                Text(text = "Bid History")
+                            },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                navController.navigate(TaylorSwitchScreen.BidRecord.name)
 
                             }
                         )
@@ -217,37 +261,10 @@ fun TaylorSwitchApp(
                                         if (isClosed) open() else close()
                                     }
                                 }
-                                navController.navigate(TaylorSwitchScreen.BidHistory.name)
+                                navController.navigate(TaylorSwitchScreen.BidRecord.name)
 
                             }
                         )
-                        NavigationDrawerItem(
-                            label = {
-                                Text(text = "Post Bid")
-                            },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.PostBid.name)
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("main") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.MainPage.name)
-                            }
-                        )
-
                         NavigationDrawerItem(
                             label = { Text("test") },
                             selected = false,
@@ -272,7 +289,20 @@ fun TaylorSwitchApp(
                                 }
                                 navController.navigate(TaylorSwitchScreen.LoginPage.name)
                             }
-                        )                // ...other drawer items
+                        )
+                        NavigationDrawerItem(
+                            label = { Text("logout") },
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                                userLoginViewModel.signOut()
+                                navController.navigate(TaylorSwitchScreen.LoginPage.name)
+                            }
+                        ) // ...other drawer items
 
                         NavigationDrawerItem(
                             label = { Text("Edit Profile") },
@@ -299,18 +329,43 @@ fun TaylorSwitchApp(
                             navigateUp = { navController.popBackStack() },
                             onNavigationIconClick = {}
                         )
-                    } else if (currentDestination == TaylorSwitchScreen.EditProfilePage.name) {
+                    }else if(currentDestination == TaylorSwitchScreen.BidMainPage.name){
+                        TaylorSwitchAppBar(
+                            title = "Taylor Switch",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
+                            }
+                            }
+                        )
+                    }else if (currentDestination == TaylorSwitchScreen.EditProfilePage.name) {
                         TaylorSwitchAppBar(
                             title = "Edit Profile",
                             canNavigateBack = true,
                             navigateUp = { navController.popBackStack() },
                             onNavigationIconClick = {}
                         )
-                    } else {
+                    }else if(currentDestination == TaylorSwitchScreen.BidPost.name){
                         TaylorSwitchAppBar(
-                            title = "Taylor Switch",
+                            title = "Bid Post",
                             canNavigateBack = false,
-                            navigateUp = { /* TODO: implement back navigation */ },
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.BidRecord.name){
+                        TaylorSwitchAppBar(
+                            title = "Bid Record",
+                            canNavigateBack = false,
+                            navigateUp = {},
                             onNavigationIconClick = {
                                 scope.launch {
                                     drawerState.apply {
@@ -320,71 +375,94 @@ fun TaylorSwitchApp(
                             }
                         )
                     }
+                    else {
+                        TaylorSwitchAppBar(
+                            title = currentDestination.toString(),
+                            canNavigateBack = true,
+                            navigateUp = { navController.popBackStack() },
+                            onNavigationIconClick = {}
+                        )
+                    }
                 },
                 bottomBar = {
-                    if (currentDestination == TaylorSwitchScreen.MainPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
                         TaylorSwitchBottomBar(
                             tabBarItems = tabBarItems,
+                            navController = navController
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.BidPost.name || currentDestination == TaylorSwitchScreen.BidRecord.name){
+                        TaylorSwitchBottomBar(
+                            tabBarItems = bidBarItems,
                             navController = navController
                         )
                     }
                 },
                 floatingActionButton = {
-                    if (currentDestination == TaylorSwitchScreen.MainPage.name) {
-                        MainUI()
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
+                        MainUI(navController = navController)
                     }
                 }
             )
             { innerPadding ->
-                val uiState by viewModel.uiState.collectAsState()
+                val uiState by bidViewModel.uiState.collectAsState()
                 NavHost(
                     navController = navController,
                     startDestination = TaylorSwitchScreen.LoginPage.name,
                     modifier = Modifier.padding(innerPadding)
                 ) {
-                    composable(TaylorSwitchScreen.MainPage.name) {
+                    composable(TaylorSwitchScreen.BidMainPage.name) {
+//                        bidViewModel.fetchUserProfile()
                         HomeScreen(
-                            viewModel = viewModel,
+                            viewModel = bidViewModel,
                             navController = navController
                         )
                     }
                     //Bid
+
                     composable(route = TaylorSwitchScreen.PostBid.name) {
 //                    viewModel.resetUiState()
+//                        bidViewModel.resetPosting()
                         PostScreen(
                             onPostButtonClicked = {
-                                viewModel.postBid(context = context)
+                                if(bidViewModel.postBid(poster = appUiState.uid, context = context)){
+                                    navController.navigate(TaylorSwitchScreen.BidPost.name)
+                                }
+
                             },
-                            bidViewModel = viewModel
+                            bidViewModel = bidViewModel,
+                            onCancelButtonClicked = {
+                                bidViewModel.resetPosting()
+                                navController.navigate(TaylorSwitchScreen.BidMainPage.name)
+                            }
                         )
 //                    fab()
                     }
 
                     composable(TaylorSwitchScreen.ViewBid.name + "/{auctionId}") { backStackEntry ->
                         val auctionId = backStackEntry.arguments?.getString("auctionId")
-                        viewModel.getAuctionById("$auctionId")
+//                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
                             bidUiState = uiState,
-                            bidViewModel = viewModel,
+                            bidViewModel = bidViewModel,
                             navController = navController
                         )
                     }
 
-                    composable(TaylorSwitchScreen.PostHistory.name) {
+                    composable(TaylorSwitchScreen.BidPost.name) {
 
-                        viewModel.getUserHistoryArray("userPost", "postRef")
+                        bidViewModel.getUserHistoryArray("userPost", "postRef")
                         PostHistoryScreen(
-                            bidViewModel = viewModel,
+                            bidViewModel = bidViewModel,
                             list = uiState.historyRecArr,
                             navController = navController
 
                         )
                     }
-                    composable(TaylorSwitchScreen.BidHistory.name) {
-                        viewModel.getUserHistoryArray("userBid", "bidRef")
+                    composable(TaylorSwitchScreen.BidRecord.name) {
+                        bidViewModel.getUserHistoryArray("userBid", "bidRef")
                         BidHistoryScreen(
-                            bidViewModel = viewModel,
+                            bidViewModel = bidViewModel,
                             list = uiState.historyRecArr,
                             navController = navController
 
@@ -392,6 +470,10 @@ fun TaylorSwitchApp(
                     }
                     composable(TaylorSwitchScreen.Test.name) {
 //                    MultiplePhotoPicker()
+//                        SignUpScreen(userViewModel, navController)
+                    }
+                    composable(TaylorSwitchScreen.PostTrade.name){
+                        PostTradeItemScreen(tradeViewModel,{})
                     }
                     composable(TaylorSwitchScreen.LoginPage.name) {
                         LoginScreen(
@@ -407,7 +489,7 @@ fun TaylorSwitchApp(
                     composable(TaylorSwitchScreen.EditProfilePage.name) {
                         EditProfileScreen(
                             viewModel = userProfileViewModel,
-                            onBackClick = { navController.navigate(TaylorSwitchScreen.MainPage.name) },
+                            onBackClick = { navController.navigate(TaylorSwitchScreen.BidMainPage.name) },
                             navController = navController
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
@@ -455,9 +537,10 @@ fun TaylorSwitchApp(
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                             )
                         }
-                    composable(TaylorSwitchScreen.MainPage.name) {
+                    composable(TaylorSwitchScreen.BidMainPage.name) {
+//                        bidViewModel.getUserProfile()
                         HomeScreen(
-                            viewModel = viewModel,
+                            viewModel = bidViewModel,
                             navController = navController
                         )
                     }
@@ -494,11 +577,11 @@ fun GreetingPreview() {
 
 
 @Composable
-fun MainUI() {
+fun MainUI(navController: NavHostController) {
     var expanded by remember { mutableStateOf(false) }
     val items = listOf(
-        MiniFabItems(Icons.Filled.SyncAlt, "Trade"),
-        MiniFabItems(Icons.Filled.Gavel, "Bid")
+        MiniFabItems(Icons.Filled.SyncAlt, "Trade", TaylorSwitchScreen.PostTrade.name),
+        MiniFabItems(Icons.Filled.Gavel, "Bid", TaylorSwitchScreen.PostBid.name)
     )
     Column(horizontalAlignment = Alignment.End) {
         AnimatedVisibility(
@@ -508,7 +591,7 @@ fun MainUI() {
         ) {
             LazyColumn(Modifier.padding(bottom = 8.dp)) {
                 items(items.size) {
-                    ItemUi(icon = items[it].icon, title = items[it].title)
+                    ItemUi(icon = items[it].icon, title = items[it].title, route = items[it].route, navController = navController)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -530,20 +613,20 @@ fun MainUI() {
 }
 
 @Composable
-fun ItemUi(icon: ImageVector, title: String) {
+fun ItemUi(icon: ImageVector, title: String, route: String, navController: NavHostController) {
     val context = LocalContext.current
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
         Spacer(modifier = Modifier.weight(1f))
         Box(
             modifier = Modifier
-                .border(2.dp, Color(0xFFFF9800), RoundedCornerShape(10.dp))
+                .border(2.dp, Color.Gray, RoundedCornerShape(10.dp))
                 .padding(6.dp)
         ) {
             Text(text = title)
         }
         Spacer(modifier = Modifier.width(10.dp))
         FloatingActionButton(onClick = {
-            Toast.makeText(context, title, Toast.LENGTH_SHORT).show()
+            navController.navigate(route)
         }, modifier = Modifier.size(45.dp)) {
             Icon(imageVector = icon, contentDescription = "")
         }

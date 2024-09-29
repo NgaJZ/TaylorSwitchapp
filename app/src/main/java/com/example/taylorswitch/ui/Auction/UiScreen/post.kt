@@ -51,6 +51,7 @@ import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -90,17 +91,16 @@ fun PostScreen(
 //    onMinBidChanged: (String) -> Unit,
 
     bidViewModel: BidViewModel = viewModel(),
-    onPostButtonClicked: () -> Unit
+    onPostButtonClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit
 ) {
 
-
-
+//    bidViewModel.resetVM()
     val postUiState by bidViewModel.postUiState.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var showTimePicker by remember { mutableStateOf(false) }
     val state = rememberTimePickerState()
-
     val formatter = remember { java.text.SimpleDateFormat("hh:mm a", Locale.getDefault()) }
 
 
@@ -115,7 +115,7 @@ fun PostScreen(
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = {
-            bidViewModel.imageUris = it
+            bidViewModel.updateImage(it)
         }
     )
 
@@ -139,7 +139,7 @@ fun PostScreen(
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(bidViewModel.imageUris) { uri ->
+                    items(postUiState.imageUris) { uri ->
                         AsyncImage(
                             model = uri,
                             contentDescription = null,
@@ -371,11 +371,7 @@ fun PostScreen(
                         .padding(0.dp)
                         .width(100.dp)
                         .height(44.dp),
-                    onClick =
-//                    onPostButtonClicked
-                    {
-                        bidViewModel.resetPosting()
-                    },
+                    onClick = onCancelButtonClicked,
                     enabled = true
                 ) {
                     Text("Cancel")
@@ -415,7 +411,7 @@ fun PostScreen(
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(bidViewModel.imageUris) { uri ->
+                    items(postUiState.imageUris) { uri ->
                         AsyncImage(
                             model = uri,
                             contentDescription = null,
@@ -658,11 +654,7 @@ fun PostScreen(
                             .padding(0.dp)
                             .width(100.dp)
                             .height(44.dp),
-                        onClick =
-//                    onPostButtonClicked
-                        {
-                            bidViewModel.resetPosting()
-                        },
+                        onClick = onCancelButtonClicked,
                         enabled = true
                     ) {
                         Text("Cancel")

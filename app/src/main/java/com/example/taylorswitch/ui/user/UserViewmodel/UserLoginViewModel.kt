@@ -7,14 +7,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taylorswitch.data.AppUiState
 import com.example.taylorswitch.data.BidUiState
 import com.example.taylorswitch.data.UserLoginUiState
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
@@ -37,7 +40,9 @@ class UserLoginViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle) // Mutable state flow
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow() // Public immutable state flow
 
-
+    private val _appUiState = MutableStateFlow(AppUiState())
+    val appUiState: StateFlow<AppUiState> = _appUiState.asStateFlow()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
 
     // Navigate to Forgot Password
@@ -103,6 +108,7 @@ class UserLoginViewModel : ViewModel() {
                         Log.d(TAG, "signInWithEmail:success")
 //                        updateUI(user)
                         _loginState.value = LoginState.Success
+                        fetchUserProfile()
 
                     } else {
                         _loginState.value =
@@ -112,6 +118,28 @@ class UserLoginViewModel : ViewModel() {
                 }
         }
     }
+
+    //get user
+    fun fetchUserProfile() {
+        val userId = firebaseAuth.currentUser?.uid ?: return
+
+        firestore.collection("user").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                document?.let {
+                    val data = document.data ?: return@addOnSuccessListener
+                    _appUiState.update { currentState ->
+                        currentState.copy(
+                            uid = data["uid"] as String? ?:"",
+                            username = data["username"] as String? ?: ""
+
+                        )
+                    }
+                }
+            }
+    }
+
+
     // Sign out function
     fun signOut() {
         firebaseAuth.signOut()

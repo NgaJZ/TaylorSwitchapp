@@ -47,7 +47,7 @@ fun LoginScreen(
     LaunchedEffect(loginState) {
         if (loginState is UserLoginViewModel.LoginState.Success) {
             // Navigate to main page after successful login
-            navController.navigate(TaylorSwitchScreen.MainPage.name)
+            navController.navigate(TaylorSwitchScreen.BidMainPage.name)
         }
     }
 
