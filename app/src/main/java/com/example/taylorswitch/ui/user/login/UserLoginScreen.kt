@@ -34,9 +34,7 @@ import androidx.compose.runtime.collectAsState
 fun LoginScreen(
     viewModel: UserLoginViewModel,
     navController: NavController,
-    activity: Activity,
-    onSignUpClick: () -> Unit,
-    onGoogleSignInClick: () -> Unit
+    onSignUpClick: ()-> Unit
 //    onForgotPasswordClick: () -> Unit,  // Function to handle "Forgot Password" click
     // Function to handle "Sign Up" navigation
 ) {
