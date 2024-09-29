@@ -1,5 +1,6 @@
 package com.example.taylorswitch.ui.user.login
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,7 +34,9 @@ import androidx.compose.runtime.collectAsState
 fun LoginScreen(
     viewModel: UserLoginViewModel,
     navController: NavController,
-    onSignUpClick: () -> Unit
+    activity: Activity,
+    onSignUpClick: () -> Unit,
+    onGoogleSignInClick: () -> Unit
 //    onForgotPasswordClick: () -> Unit,  // Function to handle "Forgot Password" click
     // Function to handle "Sign Up" navigation
 ) {
@@ -68,7 +71,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Log in",
+                text = "Sign in",
                 fontSize = 30.sp,
                 modifier = Modifier.align(Alignment.Start)
             )
@@ -125,7 +128,9 @@ fun LoginScreen(
 
             // Login button
             Button(
-                onClick = {viewModel.login(uiState.email, uiState.password) },
+                onClick = {
+                    if (viewModel.validateForm()) { // Validate form before attempting to log in
+                        viewModel.login(uiState.email, uiState.password) }},
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading
             ) {
@@ -139,15 +144,56 @@ fun LoginScreen(
                 }
                 //Text(text = "Log in", fontSize = 18.sp)
             }
-            // Error message
-            if (uiState.errorMessage != null) {
-                Text(uiState.errorMessage, color = Color.Red)
+            // Show error message from login state
+            if (loginState is UserLoginViewModel.LoginState.Error) {
+                Text(
+                    text = (loginState as UserLoginViewModel.LoginState.Error).message,
+                    color = Color.Red
+                )
             }
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = onSignUpClick) {
                 Text(text = "Don’t have an account? Sign up")
             }
+            // Google Sign-In Button
+//            Button(
+//                onClick = { onGoogleSignInClick() },
+//                modifier = Modifier.fillMaxWidth().padding(8.dp),
+//                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+//            ) {
+//                Text(text = "Sign in with Google", fontSize = 18.sp)
+//            }
+            // Handle login result
+            when (loginState) {
+                is UserLoginViewModel.LoginState.Loading -> CircularProgressIndicator()
+                is UserLoginViewModel.LoginState.Error -> {
+                    Text(
+                        text = (loginState as UserLoginViewModel.LoginState.Error).message,
+                        color = Color.Red
+                    )
+                }
+                is UserLoginViewModel.LoginState.Success -> {
+                    // Navigate to the home screen
+//                    navController.navigate("home")
+                }
+                else -> { /* No state */ }
+            }
+            // Launcher for Google Sign-In Intent
+//            val launcher = rememberLauncherForActivityResult(
+//                contract = ActivityResultContracts.StartActivityForResult()
+//            ) { result ->
+//                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+//                val account = task.getResult(ApiException::class.java)
+//                account?.let {
+//                    viewModel.handleGoogleSignInResult(it) { success, error ->
+//                        if (!success && error != null) {
+//                            // Show error message if sign-in failed
+//                            Log.e("GoogleSignIn", "Google Sign-In failed: $error")
+//                        }
+//                    }
+//                }
+//            }
 
         }
     }

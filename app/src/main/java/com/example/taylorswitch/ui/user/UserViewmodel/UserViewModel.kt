@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModel
 import com.example.taylorswitch.data.UserUiState
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.taylorswitch.data.fireStore.model.Auction
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -107,7 +108,7 @@ class UserViewModel : ViewModel(){
     }
 
     // Sign-up logic with Firebase Authentication
-    fun signUp(email: String,username: String, password: String) {
+    fun signUp(email: String,username: String, password: String,navController: NavController) {
         if (!validateForm()) return
 
         _signupState.value = SignupState.Loading
@@ -132,7 +133,7 @@ class UserViewModel : ViewModel(){
                             .addOnFailureListener { e ->
                                 Log.w("Firestore", "Error adding user", e)
                             }
-
+                        //navController.navigate(Tal)
                         _signupState.value = SignupState.Success
                     } else {
                         // Handle error

@@ -1,6 +1,8 @@
 package com.example.taylorswitch.ui.user.UserViewmodel
 
+import android.app.Activity
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.LiveData
@@ -8,8 +10,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taylorswitch.data.AppUiState
-import com.example.taylorswitch.data.BidUiState
 import com.example.taylorswitch.data.UserLoginUiState
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -19,6 +21,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
 
 enum class LoginNavigation {
@@ -30,6 +37,9 @@ class UserLoginViewModel : ViewModel() {
     // State holder for login UI
     var uiState by mutableStateOf(UserLoginUiState())
         private set
+
+    // Google sign-in client
+    private lateinit var googleSignInClient: GoogleSignInClient
 
     private val _navigationEvent = MutableLiveData<LoginNavigation?>()
     val navigationEvent: LiveData<LoginNavigation?> = _navigationEvent
@@ -71,7 +81,7 @@ class UserLoginViewModel : ViewModel() {
     }
 
     // Validate form fields
-    private fun validateForm(): Boolean {
+    fun validateForm(): Boolean {
         var isValid = true
         var emailError: String? = null
         var passwordError: String? = null
@@ -146,24 +156,6 @@ class UserLoginViewModel : ViewModel() {
         _loginState.value = LoginState.Idle // Reset the login state or handle navigation in UI
     }
 
-    // Handle login action
-    fun onLogin() {
-        if (!validateForm()) return
-
-        viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
-
-            try {
-                simulateApiLogin()
-                uiState = uiState.copy(loginSuccess = true)
-            } catch (e: Exception) {
-                uiState = uiState.copy(errorMessage = e.localizedMessage ?: "Login failed")
-            } finally {
-                uiState = uiState.copy(isLoading = false)
-            }
-        }
-    }
-
     // Mock API login call
     private suspend fun simulateApiLogin() {
         kotlinx.coroutines.delay(2000) // Simulating network call
@@ -180,4 +172,79 @@ class UserLoginViewModel : ViewModel() {
         object Success : LoginState()
         data class Error(val message: String) : LoginState()
     }
+
+    // Set up Google sign-in client
+    fun initializeGoogleSignIn(activity: Activity) {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("394814787035-1rcdqvqge15k6ls9e3r7ktpmlm91f481.apps.googleusercontent.com") // Replace with your web client ID
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(activity, gso)
+    }
+
+    // Start Google Sign-In Intent
+    fun startGoogleSignIn(activity: Activity) {
+        val signInIntent = googleSignInClient.signInIntent
+        activity.startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    // Handle Google Sign-In Result
+    fun handleGoogleSignInResult(data: Intent?) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            val account = task.getResult(Exception::class.java)
+            account?.let { firebaseAuthWithGoogle(it) }
+        } catch (e: Exception) {
+            _loginState.value = LoginState.Error("Google sign-in failed: ${e.localizedMessage}")
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount) {
+        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    _loginState.value = LoginState.Success
+                    fetchUserProfile()
+                } else {
+                    _loginState.value = LoginState.Error("Google sign-in failed: ${task.exception?.message}")
+                }
+            }
+    }
+
+    // RC_SIGN_IN constant
+    companion object {
+        const val RC_SIGN_IN = 9001
+    }
+
+
+
+//// Set up Google sign-in client
+//fun setupGoogleSignIn() {
+//    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//        .requestIdToken("394814787035-1rcdqvqge15k6ls9e3r7ktpmlm91f481.apps.googleusercontent.com") // Replace with your Web Client ID from Firebase
+//        .requestEmail()
+//        .build()
+//
+//    googleSignInClient = GoogleSignIn.getClient(context, gso)
+//}
+//
+//    // Google sign-in handler
+//    fun handleGoogleSignInResult(account: GoogleSignInAccount, onComplete: (Boolean, String?) -> Unit) {
+//        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+//        firebaseAuth.signInWithCredential(credential)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    // Sign-in success
+//                    onComplete(true, null)
+//                } else {
+//                    // Sign-in failed
+//                    onComplete(false, task.exception?.message)
+//                }
+//            }
+//    }
+//
+//    // Start the Google Sign-In process
+//    fun googleSignInIntent() = googleSignInClient.signInIntent
+
 }

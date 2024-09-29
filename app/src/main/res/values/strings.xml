@@ -21,5 +21,6 @@
     <string name="closed">Closed</string>
     <string name="signup">Sign Up</string>
     <string name="MoneyShow">RM %4.2f</string>
-<!--    <string name="timeLeftFormat">%2s:%2s:%2s</string>-->
+    <string name="default_web_client_id">394814787035-1rcdqvqge15k6ls9e3r7ktpmlm91f481.apps.googleusercontent.com</string>
+    <!--    <string name="timeLeftFormat">%2s:%2s:%2s</string>-->
 </resources>

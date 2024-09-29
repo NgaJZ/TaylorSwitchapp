@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.androidx.foundation.layout.android)
     implementation(libs.androidx.foundation.layout.android)
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -132,5 +133,7 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-core:1.4.3")
     implementation("androidx.compose.material:material-icons-extended:1.4.3")
+
+    implementation ("com.google.android.gms:play-services-auth:20.5.0")
 
 }

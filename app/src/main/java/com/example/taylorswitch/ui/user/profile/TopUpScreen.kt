@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,11 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 
 @Composable //viewModel: TopUpViewModel, currentBalance: String,navController: NavController
-fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
+fun TopUpScreen(viewModel: TopUpViewModel, navController: NavController) {
     val uiState = viewModel.uiState
 
     Column(
@@ -31,6 +33,11 @@ fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Display current balance
+        Text(text = "Current Balance: RM ${uiState.balance}")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Input for custom top-up amount
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -56,7 +63,7 @@ fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            listOf("RM 20", "RM 50", "RM 100", "RM 200", "RM 500").forEach { amount ->
+            listOf("RM 20", "RM 50", "RM 100", "RM 200").forEach { amount ->
                 Button(onClick = { viewModel.updateSelectedAmount(amount) }) {
                     Text(text = amount)
                 }
@@ -81,12 +88,23 @@ fun TopUpScreen(viewModel: TopUpViewModel,navController: NavController) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Button( //viewModel.topUp(currentBalance)
-                onClick = { viewModel.topUp(uiState.balance) },
+                onClick = { viewModel.topUp(navController) },
                 modifier = Modifier.weight(1f),
                 //colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green)
                 colors = ButtonDefaults.buttonColors(Color.Green)
             ) {
                 Text("Top Up", color = Color.White)
+            }
+        }
+
+        @Composable
+        fun TopUpButton(amount: Int, onClick: (Int) -> Unit) {
+            Button(
+                onClick = { onClick(amount) },
+                modifier = Modifier.width(100.dp), // Adjust width as needed
+                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+            ) {
+                Text(text = "RM $amount", fontSize = 18.sp)
             }
         }
     }

@@ -140,7 +140,7 @@ class UserProfileViewModel : ViewModel() {
             .addOnSuccessListener {
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
                     // Save image URL to Firestore
-                    firestore.collection("users").document(userId)
+                    firestore.collection("user").document(userId)
                         .update("profileImageUrl", uri.toString())
                         .addOnSuccessListener {
                             uiState = uiState.copy(profileImageUrl = uri.toString())
@@ -219,7 +219,7 @@ class UserProfileViewModel : ViewModel() {
                 user.updateEmail(newEmail).addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         // Update Firestore after successful email change
-                        val userDoc = firestore.collection("users").document(userId)
+                        val userDoc = firestore.collection("user").document(userId)
                         userDoc.update("email", newEmail)
                         uiState = uiState.copy(isSuccess = true)
                     } else {

@@ -2,6 +2,7 @@ package com.example.taylorswitch.ui.user.profile
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -172,60 +173,6 @@ fun EditProfileScreen(
     }
 
 
-//@Composable
-//fun EditableProfileField(
-//    icon: ImageVector,
-//    label: String,
-//    value: String,
-//    onValueChange: (String) -> Unit,
-//    isPassword: Boolean = false
-//) {
-//    var isEditing by remember { mutableStateOf(false) }
-//
-//    Column(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 8.dp),
-//        verticalArrangement = Arrangement.Center
-//    ) {
-//        Row(
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Icon(
-//                imageVector = icon,
-//                contentDescription = label,
-//                modifier = Modifier.size(40.dp),
-//                tint = Color.Black
-//            )
-//            Spacer(modifier = Modifier.width(16.dp))
-//
-//            Column(modifier = Modifier.weight(1f)) {
-//                Text(text = label, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-//                if (isEditing) {
-//                    TextField(
-//                        value = value,
-//                        onValueChange = onValueChange,
-//                        modifier = Modifier.fillMaxWidth()
-//                    )
-//                } else {
-//                    Text(
-//                        text = value,
-//                        fontSize = 14.sp,
-//                        color = Color.Gray,
-//                        maxLines = 1,
-//                        overflow = TextOverflow.Ellipsis
-//                    )
-//                }
-//            }
-//            IconButton(onClick = { isEditing = !isEditing }) {
-//                Icon(
-//                    imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
-//                    contentDescription = if (isEditing) "Save" else "Edit"
-//                )
-//            }
-//        }
-//    }
-//}
 @Composable
 fun EditableProfileField(
     icon: ImageVector,
@@ -314,28 +261,98 @@ fun saveUserProfileToFirebase(
     email: String,
     address: String
 ) {
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    val user = FirebaseAuth.getInstance().currentUser
     val db = FirebaseFirestore.getInstance()
 
-    if (userId != null) {
-        val userMap = hashMapOf(
-            "username" to username,
-            "password" to password,
-            "phoneNumber" to phoneNumber,
-            "dateOfBirth" to dateOfBirth,
-            "email" to email,
-            "address" to address
-        )
+    if (user != null) {
+        val userId = user.uid
+        // Reference to the user's document
+        val userDocRef = db.collection("user").document(userId)
 
-        db.collection("user").document(userId)
-            .set(userMap, SetOptions.merge())
-            .addOnSuccessListener {
-                // Successfully saved data
+        // Fetch the current user data
+        userDocRef.get().addOnSuccessListener { document ->
+            if (document.exists()) {
+                // Create a map to hold the updates
+                val updates = hashMapOf<String, Any>()
+
+                // Check for each field if the new value is not blank and different from the existing one
+                if (username.isNotBlank() && username != document.getString("username")) {
+                    updates["username"] = username
+                }
+                if (password.isNotBlank() && password != document.getString("password")) {
+                    updates["password"] = password // Consider hashing the password before saving
+                    // Update the Firebase Authentication password
+                    user.updatePassword(password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Password updated successfully
+                                Log.d("UpdatePassword", "Password updated successfully.")
+                            } else {
+                                // Handle the error
+                                Log.e("UpdatePassword", "Failed to update password: ${task.exception?.message}")
+                            }
+                        }
+                }
+                if (phoneNumber.isNotBlank() && phoneNumber != document.getString("phoneNumber")) {
+                    updates["phoneNumber"] = phoneNumber
+                }
+                if (dateOfBirth.isNotBlank() && dateOfBirth != document.getString("dateOfBirth")) {
+                    updates["dateOfBirth"] = dateOfBirth
+                }
+                if (email.isNotBlank() && email != document.getString("email")) {
+                    updates["email"] = email
+                }
+                if (address.isNotBlank() && address != document.getString("address")) {
+                    updates["address"] = address
+                }
+
+                // Update the document with the changes
+                if (updates.isNotEmpty()) {
+                    userDocRef.update(updates)
+                        .addOnSuccessListener {
+                            // Successfully updated the fields
+                        }
+                        .addOnFailureListener { e ->
+                            // Handle the error
+                        }
+                }
             }
-            .addOnFailureListener { e ->
-                // Handle the error
-            }
+        }.addOnFailureListener { e ->
+            // Handle the error when fetching the document
+        }
     }
 }
+
+//fun saveUserProfileToFirebase(
+//    username: String,
+//    password: String,
+//    phoneNumber: String,
+//    dateOfBirth: String,
+//    email: String,
+//    address: String
+//) {
+//    val userId = FirebaseAuth.getInstance().currentUser?.uid
+//    val db = FirebaseFirestore.getInstance()
+//
+//    if (userId != null) {
+//        val userMap = hashMapOf(
+//            "username" to username,
+//            "password" to password,
+//            "phoneNumber" to phoneNumber,
+//            "dateOfBirth" to dateOfBirth,
+//            "email" to email,
+//            "address" to address
+//        )
+//
+//        db.collection("user").document(userId)
+//            .set(userMap, SetOptions.merge())
+//            .addOnSuccessListener {
+//                // Successfully saved data
+//            }
+//            .addOnFailureListener { e ->
+//                // Handle the error
+//            }
+//    }
+//}
 
 

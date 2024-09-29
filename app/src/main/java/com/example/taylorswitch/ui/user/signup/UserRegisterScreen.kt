@@ -128,7 +128,7 @@ fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {
 
 
             Button(
-                onClick = { viewModel.signUp(uiState.email,uiState.username, uiState.password) },
+                onClick = { viewModel.signUp(uiState.email,uiState.username, uiState.password,navController) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (uiState.isLoading) {
