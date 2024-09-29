@@ -364,12 +364,12 @@ fun TaylorSwitchApp(
                         )
                         NavigationDrawerItem(
                                 label = { Text("Post Trade") },
-                        selected = false,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
+                            selected = false,
+                            onClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
                             }
                             navController.navigate(TaylorSwitchScreen.PostTrade.name)
                         }
@@ -558,7 +558,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 floatingActionButton = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
                         MainUI(navController = navController)
                     }
                 }

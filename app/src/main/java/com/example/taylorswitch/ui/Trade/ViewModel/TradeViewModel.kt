@@ -192,10 +192,10 @@ class TradeViewModel : ViewModel() {
     }
 
     fun updateOwner(name: String){
-        owner = name
+        ownerName = name
         _tUiState.update { currentState ->
             currentState.copy(
-                owner = owner
+                owner = ownerName
             )
         }
     }
