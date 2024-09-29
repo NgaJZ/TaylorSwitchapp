@@ -71,7 +71,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Log in",
+                text = "Sign in",
                 fontSize = 30.sp,
                 modifier = Modifier.align(Alignment.Start)
             )
@@ -157,13 +157,13 @@ fun LoginScreen(
                 Text(text = "Don’t have an account? Sign up")
             }
             // Google Sign-In Button
-            Button(
-                onClick = { onGoogleSignInClick() },
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
-            ) {
-                Text(text = "Sign in with Google", fontSize = 18.sp)
-            }
+//            Button(
+//                onClick = { onGoogleSignInClick() },
+//                modifier = Modifier.fillMaxWidth().padding(8.dp),
+//                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+//            ) {
+//                Text(text = "Sign in with Google", fontSize = 18.sp)
+//            }
             // Handle login result
             when (loginState) {
                 is UserLoginViewModel.LoginState.Loading -> CircularProgressIndicator()

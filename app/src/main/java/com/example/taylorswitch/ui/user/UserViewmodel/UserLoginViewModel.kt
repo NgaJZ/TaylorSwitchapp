@@ -37,6 +37,8 @@ class UserLoginViewModel : ViewModel() {
     // State holder for login UI
     var uiState by mutableStateOf(UserLoginUiState())
         private set
+
+    // Google sign-in client
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private val _navigationEvent = MutableLiveData<LoginNavigation?>()

@@ -20,10 +20,13 @@ class MainActivity : ComponentActivity(){
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private val userLoginViewModel: UserLoginViewModel by viewModels()
+
     @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?){
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+
         setContent{
             TaylorSwitchTheme{
                 TaylorSwitchApp()
@@ -33,19 +36,8 @@ class MainActivity : ComponentActivity(){
 
             }
         }
-//        // Configure Google Sign-In
-//        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//            .requestIdToken(getString(R.string.default_web_client_id)) // Use your actual client ID here
-//            .requestEmail()
-//            .build()
-//
-//        googleSignInClient = GoogleSignIn.getClient(this, gso)
-//
-//        // Handle Google Sign-In request
-//        userLoginViewModel.googleSignInRequest.observe(this) {
-//            signInWithGoogle()
-//        }
     }
+
 
 
 
