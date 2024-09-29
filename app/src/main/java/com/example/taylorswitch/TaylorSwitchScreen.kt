@@ -39,14 +39,20 @@ import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
 import com.example.taylorswitch.ui.theme.AppViewModelProvider
+import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
+import com.example.taylorswitch.ui.user.profile.TopUpScreen
+import com.example.taylorswitch.ui.user.profile.WalletScreen
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
     LoginPage,
     SignUpPage,
     EditProfilePage,
+    WalletPage,
+    TopUpScreen,
     MainPage,
     ViewBid,
     PostBid,
@@ -63,6 +69,8 @@ fun TaylorSwitchApp(
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
     userProfileViewModel: UserProfileViewModel = viewModel(),
+    walletViewModel: WalletViewModel = viewModel(),
+    topUpViewModel: TopUpViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -170,6 +178,18 @@ fun TaylorSwitchApp(
                         navController.navigate(TaylorSwitchScreen.EditProfilePage.name)
                     }
                 )
+                NavigationDrawerItem(
+                    label = { Text("My Wallet") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.WalletPage.name)
+                    }
+                )
             }
         }
     ) {
@@ -267,6 +287,25 @@ fun TaylorSwitchApp(
                     EditProfileScreen(
                         viewModel =  userProfileViewModel,
                         onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                        navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                    )
+                }
+                composable(TaylorSwitchScreen.WalletPage.name){
+                    WalletScreen(
+                        viewModel =  walletViewModel,
+                        //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                        navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+                        onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpScreen.name)}         // Function to handle "Sign Up" navigation
+                    )
+                }
+                composable(TaylorSwitchScreen.WalletPage.name){
+                    TopUpScreen(
+                        viewModel =  topUpViewModel,
+                        //currentBalance = topUpViewModel.topUp(currentBalance).toString(),
+                        //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
                         navController = navController
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
