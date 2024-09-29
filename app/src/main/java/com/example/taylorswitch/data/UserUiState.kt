@@ -44,7 +44,7 @@ data class WalletUiState(
 data class TopUpUiState(
     val selectedAmount: String = "",
     val customAmount: String = "",
-    val balance: String = ""
+    val balance: Double = 0.0
 )
 
 data class UserProfileUiState(

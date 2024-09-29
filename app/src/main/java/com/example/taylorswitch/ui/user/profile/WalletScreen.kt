@@ -22,11 +22,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.taylorswitch.data.Transaction
 import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun WalletScreen(viewModel: WalletViewModel , navController: NavController, onTopUpClick: () -> Unit) {
     // Observe the walletState from the ViewModel
-//    val walletState by viewModel.walletState.collectAsState()
+    val walletState = viewModel.walletState
 
     Column(
         modifier = Modifier
@@ -49,7 +52,7 @@ fun WalletScreen(viewModel: WalletViewModel , navController: NavController, onTo
             modifier = Modifier.padding(top = 16.dp)
         )
         Text(
-            text = "RM ${viewModel.walletState.balance}",
+            text = "RM ${walletState.balance}",
             fontSize = 24.sp,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -71,24 +74,26 @@ fun WalletScreen(viewModel: WalletViewModel , navController: NavController, onTo
 
         // Transaction History
         Text(
-            text = "History",
+            text = "Transaction History",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        if (viewModel.walletState.transactionHistory.isEmpty()) {
+        if (walletState.transactionHistory.isEmpty()) {
             Text(
                 text = "No transactions available",
                 fontSize = 16.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         } else {
+            // Sort the transaction history by date in descending order
+            val sortedTransactionHistory = walletState.transactionHistory.sortedByDescending { it.date }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(viewModel.walletState.transactionHistory) { transaction ->
+                items(sortedTransactionHistory) { transaction ->
                     TransactionItem(transaction)
                 }
             }
@@ -117,7 +122,7 @@ fun TransactionItem(transaction: Transaction) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = transaction.date,
+                    text = formatDate(transaction.date.toLong()), // Assuming date is stored as a timestamp in milliseconds
                     fontSize = 14.sp
                 )
             }
@@ -129,4 +134,9 @@ fun TransactionItem(transaction: Transaction) {
             )
         }
     }
+}
+
+fun formatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+    return sdf.format(Date(timestamp))
 }

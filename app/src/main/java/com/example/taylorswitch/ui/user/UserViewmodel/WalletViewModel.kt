@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 
 import androidx.compose.runtime.getValue
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -18,6 +19,9 @@ import com.google.firebase.firestore.core.Transaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class WalletViewModel : ViewModel() {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -33,39 +37,49 @@ class WalletViewModel : ViewModel() {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun fetchWalletData() {
+    fun fetchWalletData() {
         val userId = firebaseAuth.currentUser?.uid ?: return
 
         viewModelScope.launch {
-            firestore.collection("wallets").document(userId)
+            firestore.collection("user").document(userId)
                 .get()
                 .addOnSuccessListener { document ->
                     if (document != null) {
                         val balance = document.getDouble("balance") ?: 0.0
-                        val transactions = document.get("transactionHistory") as? List<Map<String, Any>> ?: emptyList()
 
-                        val transactionList = transactions.map {
-                            com.example.taylorswitch.data.Transaction(
-                                amount = it["amount"] as Double,
-                                description = it["description"] as String,
-                                date = it["date"] as String
-                            )
-                        }
-                                //.value
-                        walletState = WalletUiState(
-                            balance = balance,
-                            transactionHistory = transactionList
-                        )
+                        // Fetch the transaction history
+                        firestore.collection("user").document(userId)
+                            .collection("transactions")
+                            .get()
+                            .addOnSuccessListener { querySnapshot ->
+                                val transactions = querySnapshot.documents.map { doc ->
+                                    com.example.taylorswitch.data.Transaction(
+                                        amount = doc.getDouble("amount") ?: 0.0,
+                                        description = doc.getString("description") ?: "",
+                                        date = doc.getLong("date").toString() // Convert timestamp to string
+                                    )
+                                }
+
+                                walletState = WalletUiState(
+                                    balance = balance,
+                                    transactionHistory = transactions
+                                )
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Firebase", "Error fetching transactions: ", e)
+                            }
                     }
                 }
         }
     }
 
+
+
     // Fetch wallet balance
     fun fetchWalletBalance() {
         val userId = firebaseAuth.currentUser?.uid ?: return
 
-        firestore.collection("wallets").document(userId)
+        firestore.collection("user").document(userId)
             .get()
             .addOnSuccessListener { document ->
                 document?.let {
