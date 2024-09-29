@@ -58,7 +58,7 @@ class TradeViewModel : ViewModel() {
     val userFireStorePath = db.collection("user").document("0").collection("UserTradeRec")
 
     init {
-        getTradeList()
+//        getTradeList()
     }
 
     data class TradingUiState(

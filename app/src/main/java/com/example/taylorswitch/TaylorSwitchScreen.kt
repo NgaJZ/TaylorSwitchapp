@@ -1,7 +1,6 @@
 package com.example.taylorswitch
 
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloat
@@ -13,7 +12,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,9 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.outlined.Gavel
@@ -42,7 +38,6 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.PostAdd
 import androidx.compose.material.icons.outlined.SyncAlt
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -59,7 +54,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,11 +82,17 @@ import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostScreen
+import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
+import com.example.taylorswitch.ui.Trade.uiScreen.HomepageScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.PostTradeItemScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.ReviewTradeRequest
+import com.example.taylorswitch.ui.Trade.uiScreen.TradeHistoryScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.TradeListScreen
+import com.example.taylorswitch.ui.Trade.uiScreen.TradeRequestScreen
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
-import com.example.taylorswitch.ui.theme.AppViewModelProvider
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
 import kotlinx.coroutines.launch
@@ -120,7 +120,7 @@ enum class TaylorSwitchScreen() {
 @Composable
 fun TaylorSwitchApp(
     bidViewModel: BidViewModel = viewModel(
-//        factory = AppViewModelProvider.Factory
+        factory = AppViewModelProvider.Factory
     ),
     tradeViewModel: TradeViewModel = viewModel(),
     userLoginViewModel: UserLoginViewModel = viewModel(),
@@ -182,6 +182,7 @@ fun TaylorSwitchApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route
     val appUiState by userLoginViewModel.appUiState.collectAsState()
+    val tUiState by tradeViewModel.tUiState.collectAsState()
 
     if (!(currentDestination == TaylorSwitchScreen.LoginPage.name || currentDestination == TaylorSwitchScreen.SignUpPage.name)) {
         ModalNavigationDrawer(
@@ -522,7 +523,7 @@ fun TaylorSwitchApp(
 //                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
-                            bidUiState = uiState,
+//                            bidUiState = uiState,
                             bidViewModel = bidViewModel,
                             navController = navController
                         )
@@ -551,9 +552,9 @@ fun TaylorSwitchApp(
 //                    MultiplePhotoPicker()
 //                        SignUpScreen(userViewModel, navController)
                     }
-                    composable(TaylorSwitchScreen.PostTrade.name){
-                        PostTradeItemScreen(tradeViewModel,{})
-                    }
+//                    composable(TaylorSwitchScreen.PostTrade.name){
+//                        PostTradeItemScreen(tradeViewModel,{})
+//                    }
                     composable(TaylorSwitchScreen.LoginPage.name) {
                         LoginScreen(
                             viewModel = userLoginViewModel,

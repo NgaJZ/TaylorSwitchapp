@@ -51,7 +51,6 @@ import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -70,6 +70,7 @@ import androidx.compose.ui.window.Popup
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
+import com.example.taylorswitch.data.EndDateStatus
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
@@ -102,15 +103,7 @@ fun PostScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     val state = rememberTimePickerState()
     val formatter = remember { java.text.SimpleDateFormat("hh:mm a", Locale.getDefault()) }
-
-
-    var showMenu by remember { mutableStateOf(true) }
-    var showDialExample by remember { mutableStateOf(false) }
     var selectedTime: TimePickerState? by remember { mutableStateOf(null) }
-
-//    var imageUris by remember{
-//        mutableStateOf<List<Uri>>(emptyList())
-//    }
 
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
@@ -121,7 +114,7 @@ fun PostScreen(
 
     val windowSize = rememberWindowSize()
     when (windowSize.width) {
-        WindowType.SMALL ->    Column(
+        WindowType.SMALL -> Column(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxSize()
@@ -150,7 +143,7 @@ fun PostScreen(
                             // You can adjust the size as needed
                         )
                     }
-                    item{
+                    item {
                         Card(
                             modifier = Modifier
                                 .width(149.dp)
@@ -184,7 +177,13 @@ fun PostScreen(
                     .height(60.dp),
                 value = postUiState.title,
                 onValueChange = { bidViewModel.updateListingTitle(it) },
-                label = { Text("Listing Title") },
+                label = {
+                    if(postUiState.titleValid){
+                    Text("Listing Title")
+                }else{
+                    Text("Error", color = Color.Red)
+                }
+                     },
                 trailingIcon = {
                     IconButton(onClick = { bidViewModel.updateListingTitle("") }) {
                         Icon(
@@ -227,7 +226,18 @@ fun PostScreen(
                     value = postUiState.startBidInput,
                     onValueChange = { bidViewModel.updateStartBidAmount(it) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    label = { Text("Start Bid") },
+                    label = {
+                        if (!postUiState.startBidValid) {
+                            Text(
+                                "Error",
+                                color = Color.Red
+                            )
+
+                        } else {
+                            Text("Start Bid")
+                        }
+
+                    },
                 )
                 OutlinedTextField(
                     modifier = Modifier
@@ -238,7 +248,16 @@ fun PostScreen(
                     value = postUiState.minBidInput,
                     onValueChange = { bidViewModel.updateMinBidAmount(it) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    label = { Text("Min Bid") }
+                    label = {
+                        if (postUiState.minBidValid) {
+                            Text("Min Call Up")
+                        } else {
+                            Text(
+                                "Error",
+                                color = Color.Red
+                            )
+                        }
+                    }
                 )
             }
             Box(
@@ -249,7 +268,16 @@ fun PostScreen(
                 OutlinedTextField(
                     value = postUiState.endDate,
                     onValueChange = {},
-                    label = { Text("End Date") },
+                    label = {
+                        if (postUiState.endDateStatus == EndDateStatus.Before) {
+                            Text(
+                                "Error",
+                                color = Color.Red
+                            )
+                        } else {
+                            Text("End Date")
+                        }
+                    },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showDatePicker = !showDatePicker }) {
@@ -309,7 +337,17 @@ fun PostScreen(
                 OutlinedTextField(
                     value = postUiState.endTime,
                     onValueChange = {},
-                    label = { Text("End Time") },
+                    label = {
+                        if (postUiState.endDateStatus == EndDateStatus.Now && (postUiState.endTimeStatus == EndDateStatus.Before || postUiState.endTimeStatus == EndDateStatus.Now)) {
+                            Text(
+                                "Error",
+                                color = Color.Red
+                            )
+                        } else {
+                            Text("End Time")
+                        }
+
+                    },
                     readOnly = true,
                     trailingIcon = {
                         IconButton(onClick = { showTimePicker = !showTimePicker }) {
@@ -376,15 +414,29 @@ fun PostScreen(
                 ) {
                     Text("Cancel")
                 }
-                Button(
-                    modifier = Modifier
-                        .padding(0.dp)
-                        .width(220.dp)
-                        .height(44.dp),
-                    onClick = onPostButtonClicked,
-                    enabled = true
-                ) {
-                    Text("Post")
+                if(postUiState.titleValid && postUiState.startBidValid && postUiState.minBidValid && (postUiState.endDateStatus == EndDateStatus.After || (postUiState.endDateStatus == EndDateStatus.Now && postUiState.endTimeStatus == EndDateStatus.After))){
+                    Button(
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .width(220.dp)
+                            .height(44.dp),
+                        onClick = onPostButtonClicked,
+                        enabled = true
+                    ) {
+                        Text("Post")
+                    }
+                }else {
+
+                    Button(
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .width(220.dp)
+                            .height(44.dp),
+                        onClick = onPostButtonClicked,
+                        enabled = false
+                    ) {
+                        Text("Post")
+                    }
                 }
 
             }
@@ -394,253 +446,257 @@ fun PostScreen(
 
         else ->
             Column(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
 
             ) {
 
-            // Image
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.Start),
-                verticalAlignment = Alignment.Top,
-            ) {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Image
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.Start),
+                    verticalAlignment = Alignment.Top,
                 ) {
-                    items(postUiState.imageUris) { uri ->
-                        AsyncImage(
-                            model = uri,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .width(149.dp)
-                                .height(194.dp),
-                            contentScale = ContentScale.Crop
-                            // You can adjust the size as needed
-                        )
-                    }
-                    item{
-                        IconButton(
-                            modifier = Modifier
-                                .width(149.dp)
-                                .height(194.dp),
-                           onClick = {
-                                multiplePhotoPicker.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                )
-                            }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add Image"
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(postUiState.imageUris) { uri ->
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(149.dp)
+                                    .height(194.dp),
+                                contentScale = ContentScale.Crop
+                                // You can adjust the size as needed
                             )
                         }
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-            ){
-                Column(
-                    modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                ){
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .alpha(0.5f)
-                            .padding(10.dp)
-                            .width(408.dp)
-                            .height(60.dp),
-                        value = postUiState.title,
-                        onValueChange = { bidViewModel.updateListingTitle(it) },
-                        label = { Text("Listing Title") },
-                        trailingIcon = {
-                            IconButton(onClick = { bidViewModel.updateListingTitle("") }) {
-                                Icon(
-                                    Icons.Outlined.Clear,
-                                    contentDescription = "Clear listing title" // Add a valid content description
-                                )
-                            }
-                        }
-                    )
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .alpha(0.5f)
-                            .padding(10.dp)
-                            .width(408.dp)
-                            .height(152.dp),
-                        value = postUiState.description,
-                        onValueChange = { bidViewModel.updateListingDescription(it) },
-                        label = { Text("Description") },
-                        trailingIcon = {
+                        item {
                             IconButton(
-                                onClick = { bidViewModel.updateListingDescription("") }) {
+                                modifier = Modifier
+                                    .width(149.dp)
+                                    .height(194.dp),
+                                onClick = {
+                                    multiplePhotoPicker.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                }) {
                                 Icon(
-                                    Icons.Outlined.Clear,
-                                    contentDescription = "" // Add a valid content description
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add Image"
                                 )
                             }
                         }
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                ){
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .alpha(0.5f)
-                                .padding(10.dp)
-                                .height(60.dp)
-                                .width(160.dp),
-                            value = postUiState.startBidInput,
-                            onValueChange = { bidViewModel.updateStartBidAmount(it) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            label = { Text("Start Bid") },
-                        )
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .alpha(0.5f)
-                                .padding(10.dp)
-                                .height(60.dp)
-                                .width(160.dp),
-                            value = postUiState.minBidInput,
-                            onValueChange = { bidViewModel.updateMinBidAmount(it) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            label = { Text("Min Bid") }
-                        )
                     }
-                    Box(
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                ) {
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
+                            .weight(1f)
+                            .fillMaxHeight()
                     ) {
                         OutlinedTextField(
-                            value = postUiState.endDate,
-                            onValueChange = {},
-                            label = { Text("End Date") },
-                            readOnly = true,
+                            modifier = Modifier
+                                .alpha(0.5f)
+                                .padding(10.dp)
+                                .width(408.dp)
+                                .height(60.dp),
+                            value = postUiState.title,
+                            onValueChange = { bidViewModel.updateListingTitle(it) },
+                            label = { Text("Listing Title") },
                             trailingIcon = {
-                                IconButton(onClick = { showDatePicker = !showDatePicker }) {
+                                IconButton(onClick = { bidViewModel.updateListingTitle("") }) {
                                     Icon(
-                                        imageVector = Icons.Default.DateRange,
-                                        contentDescription = "Select date"
+                                        Icons.Outlined.Clear,
+                                        contentDescription = "Clear listing title" // Add a valid content description
                                     )
                                 }
-                            },
+                            }
+                        )
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .alpha(0.5f)
+                                .padding(10.dp)
+                                .width(408.dp)
+                                .height(152.dp),
+                            value = postUiState.description,
+                            onValueChange = { bidViewModel.updateListingDescription(it) },
+                            label = { Text("Description") },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { bidViewModel.updateListingDescription("") }) {
+                                    Icon(
+                                        Icons.Outlined.Clear,
+                                        contentDescription = "" // Add a valid content description
+                                    )
+                                }
+                            }
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OutlinedTextField(
+                                modifier = Modifier
+                                    .alpha(0.5f)
+                                    .padding(10.dp)
+                                    .height(60.dp)
+                                    .width(160.dp),
+                                value = postUiState.startBidInput,
+                                onValueChange = { bidViewModel.updateStartBidAmount(it) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                label = { Text("Start Bid") },
+                            )
+                            OutlinedTextField(
+                                modifier = Modifier
+                                    .alpha(0.5f)
+                                    .padding(10.dp)
+                                    .height(60.dp)
+                                    .width(160.dp),
+                                value = postUiState.minBidInput,
+                                onValueChange = { bidViewModel.updateMinBidAmount(it) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                label = { Text("Min Bid") }
+                            )
+                        }
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(64.dp)
+                                .padding(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = postUiState.endDate,
+                                onValueChange = {},
+                                label = { Text("End Date") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    IconButton(onClick = { showDatePicker = !showDatePicker }) {
+                                        Icon(
+                                            imageVector = Icons.Default.DateRange,
+                                            contentDescription = "Select date"
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
 
-                        )
-                        if (showDatePicker) {
-                            Popup(
-                                onDismissRequest = { showDatePicker = false },
-                                alignment = Alignment.TopStart
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-//                                .offset(y = 64.dp)
-                                        .shadow(elevation = 4.dp)
-                                        .background(MaterialTheme.colorScheme.surface)
-
+                            )
+                            if (showDatePicker) {
+                                Popup(
+                                    onDismissRequest = { showDatePicker = false },
+                                    alignment = Alignment.TopStart
                                 ) {
-                                    DatePickerDialog(
-                                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                                        onDismissRequest = { showDatePicker = !showDatePicker },
-                                        confirmButton = {
-                                            TextButton(onClick = {
-                                                val selectedDate = datePickerState.selectedDateMillis?.let {
-                                                    convertMillisToDate(it)
-                                                } ?: ""
-                                                bidViewModel.updateEndDate(selectedDate)
-                                                showDatePicker = !showDatePicker
-                                            }) {
-                                                Text("OK")
-                                            }
-                                        },
-                                        dismissButton = {
-                                            TextButton(onClick = { showDatePicker = !showDatePicker }) {
-                                                Text("Cancel")
-                                            }
-                                        }
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+//                                .offset(y = 64.dp)
+                                            .shadow(elevation = 4.dp)
+                                            .background(MaterialTheme.colorScheme.surface)
+
                                     ) {
-                                        DatePicker(state = datePickerState)
+                                        DatePickerDialog(
+                                            modifier = Modifier.verticalScroll(rememberScrollState()),
+                                            onDismissRequest = { showDatePicker = !showDatePicker },
+                                            confirmButton = {
+                                                TextButton(onClick = {
+                                                    val selectedDate =
+                                                        datePickerState.selectedDateMillis?.let {
+                                                            convertMillisToDate(it)
+                                                        } ?: ""
+                                                    bidViewModel.updateEndDate(selectedDate)
+                                                    showDatePicker = !showDatePicker
+                                                }) {
+                                                    Text("OK")
+                                                }
+                                            },
+                                            dismissButton = {
+                                                TextButton(onClick = {
+                                                    showDatePicker = !showDatePicker
+                                                }) {
+                                                    Text("Cancel")
+                                                }
+                                            }
+                                        ) {
+                                            DatePicker(state = datePickerState)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = postUiState.endTime,
-                            onValueChange = {},
-                            label = { Text("End Time") },
-                            readOnly = true,
-                            trailingIcon = {
-                                IconButton(onClick = { showTimePicker = !showTimePicker }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.AccessTime,
-                                        contentDescription = "Select Time"
-                                    )
-                                }
-                            },
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(64.dp)
+                                .padding(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = postUiState.endTime,
+                                onValueChange = {},
+                                label = { Text("End Time") },
+                                readOnly = true,
+                                trailingIcon = {
+                                    IconButton(onClick = { showTimePicker = !showTimePicker }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.AccessTime,
+                                            contentDescription = "Select Time"
+                                        )
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
 
-                        )
-                        if (showTimePicker) {
-                            Popup(
-                                onDismissRequest = { showTimePicker = false },
-                                alignment = Alignment.TopStart
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-//                                .offset(y = 64.dp)
-                                        .shadow(elevation = 4.dp)
-                                        .background(MaterialTheme.colorScheme.surface)
+                            )
+                            if (showTimePicker) {
+                                Popup(
+                                    onDismissRequest = { showTimePicker = false },
+                                    alignment = Alignment.TopStart
                                 ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+//                                .offset(y = 64.dp)
+                                            .shadow(elevation = 4.dp)
+                                            .background(MaterialTheme.colorScheme.surface)
+                                    ) {
 
-                                    AdvancedTimePickerExample(
-                                        onDismiss = {
-                                            showTimePicker = !showTimePicker
-                                        },
-                                        onConfirm = { time ->
-                                            selectedTime = time
-                                            val cal = Calendar.getInstance()
-                                            cal.set(Calendar.HOUR_OF_DAY, selectedTime!!.hour)
-                                            cal.set(Calendar.MINUTE, selectedTime!!.minute)
-                                            cal.isLenient = false
-                                            bidViewModel.updateEndTime(formatter.format(cal.time))
-                                            showTimePicker = !showTimePicker
-                                        },
-                                    )
+                                        AdvancedTimePickerExample(
+                                            onDismiss = {
+                                                showTimePicker = !showTimePicker
+                                            },
+                                            onConfirm = { time ->
+                                                selectedTime = time
+                                                val cal = Calendar.getInstance()
+                                                cal.set(Calendar.HOUR_OF_DAY, selectedTime!!.hour)
+                                                cal.set(Calendar.MINUTE, selectedTime!!.minute)
+                                                cal.isLenient = false
+                                                bidViewModel.updateEndTime(formatter.format(cal.time))
+                                                showTimePicker = !showTimePicker
+                                            },
+                                        )
+                                    }
+
                                 }
-
                             }
-                        }
 
+                        }
                     }
                 }
-            }
 
                 Row(
                     modifier = Modifier
@@ -673,11 +729,10 @@ fun PostScreen(
 
                 }
 
-        }
+            }
     }
 
 }
-
 
 
 @Composable
@@ -782,7 +837,7 @@ fun AdvancedTimePickerExample(
         onDismiss = { onDismiss() },
         onConfirm = { onConfirm(timePickerState) },
 
-    ) {
+        ) {
         if (showDial) {
             TimePicker(
                 state = timePickerState,
@@ -819,7 +874,8 @@ fun AdvancedTimePickerDialog(
                 ),
         ) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier
+                    .padding(24.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

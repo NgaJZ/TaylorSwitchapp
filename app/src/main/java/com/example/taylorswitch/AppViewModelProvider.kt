@@ -1,13 +1,15 @@
-package com.example.taylorswitch.ui.theme
+package com.example.taylorswitch
 
 import android.app.Application
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.taylorswitch.TaylorSwitchApplication
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
+import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -15,8 +17,20 @@ object AppViewModelProvider {
         // Initializer for ItemEntryViewModel
         initializer {
             BidViewModel(
-//                taylorSwitchApplication().container.auctionsRepository
+                taylorSwitchApplication().container.auctionsRepository
             )
+        }
+        initializer {
+            TradeViewModel()
+        }
+        initializer {
+            UserLoginViewModel()
+        }
+        initializer {
+            UserProfileViewModel()
+        }
+        initializer {
+            UserViewModel()
         }
 
     }

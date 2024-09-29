@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.example.taylorswitch.data.localDatabase.scheduleAuctionSync
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 
 class MainActivity : ComponentActivity(){
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity(){
 //                TimePickerExamples()
 //                DrawerDemo()
 //                DialWithDialogExample({},{})
-
+//                scheduleAuctionSync(this)
             }
         }
     }
