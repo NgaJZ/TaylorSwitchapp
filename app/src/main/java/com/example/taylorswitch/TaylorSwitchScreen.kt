@@ -134,6 +134,7 @@ enum class TaylorSwitchScreen() {
     BidMainPage,
     ViewBid,
     PostBid,
+    EditProfilePage,
     BidRecord,
     BidPost,
     Test,
@@ -821,7 +822,7 @@ fun TaylorSwitchApp(
                     composable(TaylorSwitchScreen.EditProfilePage.name){
                         EditProfileScreen(
                             viewModel =  userProfileViewModel,
-                            onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            onBackClick = {navController.popBackStack()},
                             navController = navController
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
@@ -833,10 +834,10 @@ fun TaylorSwitchApp(
                             //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
                             navController = navController,
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpScreen.name)}         // Function to handle "Sign Up" navigation
+                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpPage.name)}         // Function to handle "Sign Up" navigation
                         )
                     }
-                    composable(TaylorSwitchScreen.WalletPage.name){
+                    composable(TaylorSwitchScreen.TopUpPage.name){
                         TopUpScreen(
                             viewModel =  topUpViewModel,
                             //currentBalance = topUpViewModel.topUp(currentBalance).toString(),
