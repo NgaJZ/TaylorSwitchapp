@@ -35,7 +35,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -52,7 +51,7 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 
 @Composable
 fun ReviewTradeRequest(
-    tradeId: String?,
+    tradeId: String,
     tradeUiState: TradeUiState,
     tradeViewModel: TradeViewModel = viewModel(),
     navController: NavHostController
@@ -78,11 +77,12 @@ fun ReviewTradeRequest(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestPortrait(
-    tradeId: String?,
+    tradeId: String,
     tradeUiState: TradeUiState,
     tradeViewModel: TradeViewModel,
     navController: NavHostController
 ){
+    val tradePost = tradeViewModel.getTradeById(tradeId)
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.imageUris = it }
@@ -199,8 +199,8 @@ fun ReviewTradeRequestPortrait(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (tradeUiState.tradeItem.isNotEmpty()) {
-                        items(tradeUiState.tradeItem) { imageUrl ->
+                    if (tradeUiState.trader.tradeItem.isNotEmpty()) {
+                        items(tradeUiState.trader.tradeItem) { imageUrl ->
                             ImageCardTR(imageUrl, modifier = Modifier.fillMaxHeight())
                         }
                     }else{
@@ -314,7 +314,7 @@ fun ReviewTradeRequestPortrait(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestLandscape(
-    tradeId: String?,
+    tradeId: String,
     tradeUiState: TradeUiState,
     tradeViewModel: TradeViewModel,
     navController: NavHostController
@@ -451,8 +451,8 @@ fun ReviewTradeRequestLandscape(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (tradeUiState.tradeItem.isNotEmpty()) {
-                        items(tradeUiState.tradeItem) { imageUrl ->
+                    if (tradeUiState.trader.tradeItem.isNotEmpty()) {
+                        items(tradeUiState.trader.tradeItem) { imageUrl ->
                             ImageCardTR(imageUrl, modifier = Modifier.fillMaxHeight())
                         }
                     }else{

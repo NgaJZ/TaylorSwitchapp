@@ -60,7 +60,8 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 @Composable
 fun PostTradeItemScreen(
     tradeViewModel: TradeViewModel = viewModel(),
-    onPostButtonClicked: () -> Unit
+    onPostButtonClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit
 ){
     LaunchedEffect(Unit) {
         tradeViewModel.resetUiState()
@@ -226,12 +227,7 @@ fun PostTradeItemScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = {
-                        onPostButtonClicked
-                        run {
-                            tradeViewModel.resetPosting()
-                        }
-                    },
+                    onClick = onCancelButtonClicked,
                     enabled = true,
                     colors = ButtonDefaults.buttonColors(Color.Gray),
                     modifier = Modifier
@@ -401,12 +397,7 @@ fun PostTradeItemScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Button(
-                        onClick = {
-                            onPostButtonClicked
-                            run {
-                                tradeViewModel.resetPosting()
-                            }
-                        },
+                        onClick = onCancelButtonClicked,
                         enabled = true,
                         colors = ButtonDefaults.buttonColors(Color.Gray),
                         modifier = Modifier
