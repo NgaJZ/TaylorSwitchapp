@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,9 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.taylorswitch.R
 import com.example.taylorswitch.TaylorSwitchScreen
+import com.example.taylorswitch.data.fireStore.model.Trade
 import com.example.taylorswitch.data.tradeHistory
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 import okio.Source
@@ -47,7 +50,9 @@ import okio.Source
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = emptyList(), navController: NavHostController){
+fun TradeListScreen(tradeViewModel: TradeViewModel, navController: NavHostController){
+    tradeViewModel.getTradeList()
+    val trades by tradeViewModel.tradeList.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         tradeViewModel.getUserHistoryArray("0", "userPost", "postTradeRef")
     }
@@ -56,15 +61,12 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(list) { tradePostRec ->
+            items(trades) { trade ->
                 ListPosting(
-                    id = tradePostRec.id.toString(),
-                    title = tradePostRec.title,
-                    onClickStartSource = {
-                        navController.navigate(TaylorSwitchScreen.ReviewTrade.name+"/${tradePostRec.id.toInt()}")
-                        tradeViewModel.getTradeById((tradePostRec.id.toInt()).toString())
-                    },
-                    isOpen = tradePostRec.live
+                    trade, onClickStartSource = {
+                        navController.navigate(TaylorSwitchScreen.ReviewTrade.name + "/${trade.id}")
+                        tradeViewModel.getTradeById(trade.id.toString())
+                    }
                 )
             }
         }
@@ -72,7 +74,7 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
 
 @Composable
 private fun ListPosting(
-    id: String = "", title: String, onClickStartSource: () -> Unit, isOpen: Boolean
+    trade: Trade, onClickStartSource: () -> Unit
 ){
     Row (
         modifier = Modifier.fillMaxWidth(),
@@ -92,10 +94,10 @@ private fun ListPosting(
             ){
                 Spacer(modifier = Modifier.height(2.dp))
 
-                Text(text = stringResource(id = R.string.title, title))
+                Text(text = trade.title)
             }
         }
-        if (isOpen){
+        if (trade.live){
             Button(
                 onClick = onClickStartSource,
                 enabled = true,
