@@ -493,7 +493,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 bottomBar = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
                         TaylorSwitchBottomBar(
                             tabBarItems = tabBarItems,
                             navController = navController
@@ -547,7 +547,6 @@ fun TaylorSwitchApp(
 
                     composable(TaylorSwitchScreen.ViewBid.name + "/{auctionId}") { backStackEntry ->
                         val auctionId = backStackEntry.arguments?.getString("auctionId")
-//                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
                             bidViewModel = bidViewModel,

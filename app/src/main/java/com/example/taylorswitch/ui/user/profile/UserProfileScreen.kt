@@ -237,7 +237,7 @@ fun ProfileField(icon: ImageVector, label: String, value: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { onCl }, // Make the field clickable
+            .clickable {  }, // Make the field clickable
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
