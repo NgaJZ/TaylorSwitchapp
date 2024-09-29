@@ -1,5 +1,6 @@
 package com.example.taylorswitch.data.localDatabase
 
+import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -19,5 +20,6 @@ data class AuctionPostLocal (
     val highestBid :Double,
     val imageUris: List<String>, // List of image URIs (local paths)
     val isUploaded: Boolean = false, // Track whether the auction is uploaded to Firestore
-    val live: Boolean = false
+    val live: Boolean = false,
+    val poster: String
 )

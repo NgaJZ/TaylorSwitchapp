@@ -57,6 +57,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavHostController
@@ -65,10 +66,12 @@ import com.example.taylorswitch.TaylorSwitchScreen
 @Composable
 fun BidSession(
     auctionId: String?,
-    bidUiState: BidUiState,
+//    bidUiState: BidUiState,
     bidViewModel: BidViewModel = viewModel(),
     navController: NavHostController
 ) {
+
+    val bidUiState by bidViewModel.uiState.collectAsState()
 
     var timeRemainingInMillis by remember { mutableStateOf(0L) }
     val lazyListState = rememberLazyListState()
@@ -195,43 +198,40 @@ fun BidSessionPortrait(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row() {
-                    Image(
-                        modifier = Modifier
-                            .size(55.dp)
-                            .padding(10.dp),
-                        painter = painterResource(id = R.drawable.image),
-                        contentDescription = "image description",
-                        contentScale = ContentScale.FillBounds
-                    )
+                    if(bidUiState.posterImage == ""){
+                        Image(
+                            modifier = Modifier
+                                .size(55.dp)
+                                .padding(10.dp),
+                            painter = painterResource(id = R.drawable.image),
+                            contentDescription = "image description",
+                            contentScale = ContentScale.FillBounds
+                        )
+                    }else{
+                        Image(
+                            modifier = Modifier
+                                .size(55.dp)
+                                .padding(10.dp),
+                            painter = rememberImagePainter(data = bidUiState.posterImage),
+                            contentDescription = "image description",
+                            contentScale = ContentScale.FillBounds
+                        )
+                    }
 //                Spacer(modifier = Modifier.width(10.dp))
+
                     Text(
+                        modifier = Modifier.fillMaxHeight()
+                            .align(Alignment.CenterVertically),
+//                        textAlign = TextAlign.Center,
                         text = bidUiState.posterName,
                         style = TextStyle(
                             fontSize = 16.sp,
-                            lineHeight = 24.sp,
-                            fontWeight = FontWeight(400),
-                            letterSpacing = 0.5.sp,
+                            fontWeight = FontWeight(400)
                         )
                     )
                 }
 
-                Button(
-                    onClick = {},
-                    enabled = true
-                ) {
-                    Text(
-                        text = "View profile",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            lineHeight = 20.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
-                            fontWeight = FontWeight(500),
-//                            color = Color(0xFFFFFFFF),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.1.sp,
-                        )
-                    )
-                }
+
 
             }
 
@@ -366,7 +366,7 @@ fun BidSessionPortrait(
                     modifier = Modifier
                         .width(100.dp),
                     value = bidUiState.callAmount,
-                    onValueChange = { bidViewModel.updateBidCall(it) },
+                    onValueChange = { bidViewModel.updateBidCall(it)},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     label = {
                         if (bidViewModel.isCallNotValid()) {
@@ -443,7 +443,6 @@ fun BidSessionLandscape(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .height(IntrinsicSize.Min)
-//        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier
@@ -524,47 +523,44 @@ fun BidSessionLandscape(
             verticalArrangement = Arrangement.Center,
         ) {
             Row(
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Image(
-                    modifier = Modifier
-                        .size(55.dp)
-                        .padding(10.dp),
-                    painter = painterResource(id = R.drawable.image),
-                    contentDescription = "image description",
-                    contentScale = ContentScale.FillBounds
-                )
-//                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = bidUiState.posterName,
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight(400),
-                        letterSpacing = 0.5.sp,
-                    )
-                )
+                Row(){
+                    if(bidUiState.posterImage == ""){
+                        Image(
+                            modifier = Modifier
+                                .size(55.dp)
+                                .padding(10.dp),
+                            painter = painterResource(id = R.drawable.image),
+                            contentDescription = "image description",
+                            contentScale = ContentScale.FillBounds
+                        )
+                    }else{
+                        Image(
+                            modifier = Modifier
+                                .size(55.dp)
+                                .padding(10.dp),
+                            painter = rememberImagePainter(data = bidUiState.posterImage),
+                            contentDescription = "image description",
+                            contentScale = ContentScale.FillBounds
+                        )
+                    }
 
-
-
-                Button(
-                    onClick = {
-                        //todo: navigate to profile
-                    },
-                    enabled = true
-                ) {
                     Text(
-                        text = "View profile",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically),
+                        text = bidUiState.posterName,
                         style = TextStyle(
-                            fontSize = 12.sp,
-                            lineHeight = 20.sp,
-                            fontWeight = FontWeight(500),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.1.sp,
+                            fontSize = 16.sp,
+                            lineHeight = 24.sp,
+                            fontWeight = FontWeight(400),
+                            letterSpacing = 0.5.sp,
                         )
                     )
                 }
+
+
 
             }
 
@@ -736,12 +732,14 @@ fun BidSessionLandscape(
 
 
 
-                if(bidUiState.live){
+                if(bidViewModel.isCallNotValid() || !bidUiState.live || bidViewModel.uid == bidUiState.poster){
                     Button(
-                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
+                        onClick = {
+                            bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
+                        },
                         shape = RoundedCornerShape(size = 8.dp),
-                        enabled = true
+                        enabled = false
                     ) {
                         Text(
                             text = "Bid",
@@ -754,12 +752,11 @@ fun BidSessionLandscape(
                     }
                 }else{
                     Button(
-                        onClick = {
-                            bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
-                        },
+//                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
+                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
                         shape = RoundedCornerShape(size = 8.dp),
-                        enabled = false
+                        enabled = true
                     ) {
                         Text(
                             text = "Bid",

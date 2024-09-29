@@ -64,43 +64,6 @@ fun HomeScreen(viewModel: BidViewModel = viewModel(), navController:NavHostContr
         else -> 4              // 3 columns for large screens (landscape)
     }
 
-//    val tradeTab = TabBarItem(
-//        title = "Trade",
-//        path = TaylorSwitchScreen.PostBid.name,
-//        selectedIcon = Icons.Filled.SyncAlt,
-//        unselectedIcon = Icons.Outlined.SyncAlt
-//    )
-//    val bidTab = TabBarItem(
-//        title = "Bid",
-//        path = TaylorSwitchScreen.MainPage.name,
-//        selectedIcon = Icons.Filled.Gavel,
-//        unselectedIcon = Icons.Outlined.Gavel
-//    )
-
-//    val tabBarItems = listOf(tradeTab, bidTab, bidTab)
-//    var selectedTabIndex by rememberSaveable {
-//        mutableStateOf(0)
-//    }
-//    Column(){
-//        Row(){
-//            tabBarItems.forEachIndexed { index, tabBarItem ->
-//
-//                TextButton(
-////                    selected = selectedTabIndex == index,
-//                    onClick = {
-//                        selectedTabIndex = index
-//                        navController.navigate(tabBarItem.path)
-//                    },
-////                    icon = {},
-//                ){
-//                    Text(tabBarItem.title)
-//                }
-//
-//            }
-//        }
-
-
-//        TaylorSwitchBottomBar(tabBarItems = tabBarItems, navController = navController)
         LazyVerticalGrid(
             columns = GridCells.Fixed(gridSize),
             modifier = Modifier
@@ -108,12 +71,15 @@ fun HomeScreen(viewModel: BidViewModel = viewModel(), navController:NavHostContr
                 .fillMaxSize()
         ) {
             items(auctions) { auction -> // Adjust the number of items accordingly
-                ItemCard(auction, onClickStartSource = {
-                    navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${auction.id}")
-                    viewModel.getAuctionById(auction.id.toString())
+                if(auction.live){
+                    ItemCard(auction, onClickStartSource = {
+                        navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${auction.id}")
+                        viewModel.getAuctionById(auction.id.toString())
+
+                    }  )
+                }else{
 
                 }
-                )
             }
         }
     }

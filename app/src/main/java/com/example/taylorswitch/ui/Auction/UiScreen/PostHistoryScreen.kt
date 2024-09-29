@@ -43,49 +43,56 @@ fun PostHistoryScreen(bidViewModel: BidViewModel, list: List<historyRec> = empty
     val windowSize = rememberWindowSize()
     when (windowSize.width) {
         WindowType.SMALL ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(list) { postRec ->
-                    ListPostingPortrait(
-                        title = postRec.name,
-                        highestBid = postRec.highestBid.toString(),
-                        endDate = postRec.endDate,
-                        endTime = postRec.endTime,
-                        onClickStartSource = {
-                            navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${postRec.id.toInt()}")
-                            bidViewModel.getAuctionById((postRec.id.toInt()).toString())
-                        },
-                        live = postRec.live
-                    )
+            if(!list.isEmpty()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(list) { postRec ->
+                        ListPostingPortrait(
+                            title = postRec.name,
+                            highestBid = postRec.highestBid.toString(),
+                            endDate = postRec.endDate,
+                            endTime = postRec.endTime,
+                            onClickStartSource = {
+                                navController.navigate(TaylorSwitchScreen.ViewBid.name + "/${postRec.id.toInt()}")
+                                bidViewModel.getAuctionById((postRec.id.toInt()).toString())
+                            },
+                            live = postRec.live
+                        )
 
+                    }
                 }
             }
 
         else ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(list) { postRec ->
-                    ListPostingLandscape(
-                        imageRef = postRec.imageRef.get(0),
-                        title = postRec.name,
-                        highestBid = postRec.highestBid.toString(),
-                        endDate = postRec.endDate,
-                        endTime = postRec.endTime,
-                        onClickStartSource = {
-                            navController.navigate(TaylorSwitchScreen.ViewBid.name+"/${postRec.id.toInt()}")
-                            bidViewModel.getAuctionById((postRec.id.toInt()).toString())
-                        },
-                        live = postRec.live
-                    )
+            if(!list.isEmpty()){
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(list) { postRec ->
+                        if(!postRec.imageRef.isEmpty()) {
+                            ListPostingLandscape(
+                                imageRef = postRec.imageRef.get(0),
+                                title = postRec.name,
+                                highestBid = postRec.highestBid.toString(),
+                                endDate = postRec.endDate,
+                                endTime = postRec.endTime,
+                                onClickStartSource = {
+                                    navController.navigate(TaylorSwitchScreen.ViewBid.name + "/${postRec.id.toInt()}")
+                                    bidViewModel.getAuctionById((postRec.id.toInt()).toString())
+                                },
+                                live = postRec.live
+                            )
+                        }
 
+                    }
                 }
             }
+
 
     }
 
