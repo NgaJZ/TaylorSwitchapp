@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import com.example.taylorswitch.data.Listing
 import com.example.taylorswitch.data.TradeStatus
 import com.example.taylorswitch.data.TradeUiState
+import com.example.taylorswitch.data.Trader
 import com.example.taylorswitch.data.fireStore.model.Trade
 import com.example.taylorswitch.data.tradeHistory
 import com.example.taylorswitch.util.StorageUtil
@@ -287,7 +288,7 @@ class TradeViewModel : ViewModel() {
                 description = "",
                 category = "",
                 owner = "",
-                trader = "",
+                trader = Trader("", emptyList()),
                 live = false,
                 stage = Listing.Open,
                 tradeStatus = TradeStatus.Pending,
@@ -328,7 +329,8 @@ class TradeViewModel : ViewModel() {
                                     val history = tradeHistory(
                                         id = userSnapshot.getLong("id") ?:0L,
                                         title = userSnapshot.getString("title") ?: "",
-                                        imageRef = userSnapshot.get("imageRef") as? List<String> ?:emptyList()
+                                        imageRef = userSnapshot.get("imageRef") as? List<String> ?:emptyList(),
+                                        trader = userSnapshot.getString("trader name") ?: ""
                                     )
                                     postList.add(history)
                                     _tUiState.update { currentState ->
@@ -381,11 +383,11 @@ class TradeViewModel : ViewModel() {
             Log.d("Firestore", "User document does not exist!")
         }
     }
-    fun checkWinOrNot(user: String = "", tradeId: String = "0"): Boolean{
-        getTradeById(tradeId)
-        return user == trader
+    fun checkWinOrNot(trader: String): Boolean{
+        getCurrentUid()
+        return uid == trader
     }
-    private fun updateTrade(trader: String, tradeId: String){
+    private fun updateTrade(trader: Trader, tradeId: String){
         getCurrentUid()
         var isOpen: Boolean = false
         db.collection("trade").document(tradeId).get()
@@ -400,6 +402,7 @@ class TradeViewModel : ViewModel() {
                             trader = trader
                         )
                     }
+                    tradeItem = trader.tradeItem
                     db.collection("trade").document(tradeId).collection("trader")
                         .orderBy("tradeId", Query.Direction.DESCENDING)
                         .limit(1)
@@ -456,7 +459,7 @@ class TradeViewModel : ViewModel() {
         val tradeCall = tradeItem
         if(isCallNotValid()){
             if(owner != uid){
-            updateTrade(trader, tradeId = tradeId)
+                updateTrade(Trader(name = uid, tradeItem = tradeCall), tradeId = tradeId)
             }
         }
     }
@@ -484,5 +487,8 @@ class TradeViewModel : ViewModel() {
     }
     private fun getCurrentUid(){
         uid = firebaseAuth.currentUser?.uid ?: return
+    }
+    fun getTradeRequestById(tradeId: String){
+
     }
 }

@@ -31,12 +31,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.PostAdd
+import androidx.compose.material.icons.outlined.SyncAlt
+import androidx.compose.material3.Button
 import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
@@ -92,20 +95,28 @@ import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
+import com.example.taylorswitch.ui.theme.AppViewModelProvider
+import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
+import com.example.taylorswitch.ui.user.profile.TopUpScreen
+import com.example.taylorswitch.ui.user.profile.WalletScreen
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
     LoginPage,
     SignUpPage,
+    EditProfilePage,
+    WalletPage,
+    TopUpScreen,
+    MainPage,
     BidMainPage,
     ViewBid,
     PostBid,
     BidRecord,
     BidPost,
     Test,
-    EditProfilePage,
     PostTrade,
     TradeHomePage,
     RequestTrade,
@@ -125,6 +136,8 @@ fun TaylorSwitchApp(
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
     userProfileViewModel: UserProfileViewModel = viewModel(),
+    walletViewModel: WalletViewModel = viewModel(),
+    topUpViewModel: TopUpViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -211,6 +224,19 @@ fun TaylorSwitchApp(
                             Text(text = appUiState.username, fontSize = 15.sp)
                         }
                     }
+
+                NavigationDrawerItem(
+                    label = { Text("My Wallet") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.WalletPage.name)
+                    }
+                )
                     Column() {
 
                         Text("Bid History", modifier = Modifier.padding(16.dp))
@@ -532,7 +558,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 floatingActionButton = {
-                    if (currentDestination == TaylorSwitchScreen.LoginPage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
                         MainUI(navController = navController)
                     }
                 }
@@ -541,7 +567,7 @@ fun TaylorSwitchApp(
                 val uiState by bidViewModel.uiState.collectAsState()
                 NavHost(
                     navController = navController,
-                    startDestination = TaylorSwitchScreen.BidMainPage.name,
+                    startDestination = TaylorSwitchScreen.LoginPage.name,
                     modifier = Modifier.padding(innerPadding)
                 ) {
                     composable(TaylorSwitchScreen.BidMainPage.name) {
@@ -657,12 +683,14 @@ fun TaylorSwitchApp(
                     composable(TaylorSwitchScreen.ReviewTrade.name + "/{tradeId}") { backStackEntry ->
                         val tradeId = backStackEntry.arguments?.getString("tradeId")
                         tradeViewModel.getTradeById("$tradeId")
-                        ReviewTradeRequest(
-                            tradeId = tradeId,
-                            tradeUiState = tUiState,
-                            tradeViewModel = tradeViewModel,
-                            navController = navController
-                        )
+                        if (tradeId != null) {
+                            ReviewTradeRequest(
+                                tradeId = tradeId,
+                                tradeUiState = tUiState,
+                                tradeViewModel = tradeViewModel,
+                                navController = navController
+                            )
+                        }
                     }
                     composable(TaylorSwitchScreen.TradeList.name) {
                         tradeViewModel.getUserHistoryArray("userPost", "postRef")
@@ -737,13 +765,47 @@ fun TaylorSwitchApp(
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                         )
                     }
-
+                    composable(TaylorSwitchScreen.SignUpPage.name){
+                        SignUpScreen(
+                            viewModel =  userViewModel,
+                            navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+                    composable(TaylorSwitchScreen.EditProfilePage.name){
+                        EditProfileScreen(
+                            viewModel =  userProfileViewModel,
+                            onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+                    composable(TaylorSwitchScreen.WalletPage.name){
+                        WalletScreen(
+                            viewModel =  walletViewModel,
+                            //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpScreen.name)}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+                    composable(TaylorSwitchScreen.WalletPage.name){
+                        TopUpScreen(
+                            viewModel =  topUpViewModel,
+                            //currentBalance = topUpViewModel.topUp(currentBalance).toString(),
+                            //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
                     }
                 }
 
+            }
         }
-
-    }
 
 
 

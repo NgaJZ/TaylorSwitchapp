@@ -253,10 +253,10 @@ fun TradeRequestScreenPortrait(
                         Button(
                             onClick = {
                                 tradeViewModel.callTrade(tradeId = tradeId.toString())
-                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                navController.navigate(TaylorSwitchScreen.ReviewTrade.name)
                                       },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
                                 text = "Trade",
@@ -271,10 +271,10 @@ fun TradeRequestScreenPortrait(
                         Button(
                             onClick = {
                                 tradeViewModel.callTrade(tradeId = tradeId.toString())
-                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
                                       },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = true
+                            enabled = false
                         ) {
                             Text(
                                 text = "Trade",
@@ -481,10 +481,10 @@ fun TradeRequestScreenLandscape(
                         Button(
                             onClick = {
                                 tradeViewModel.callTrade(tradeId = tradeId.toString())
-                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
                             },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
                                 text = "Trade",
@@ -499,10 +499,10 @@ fun TradeRequestScreenLandscape(
                         Button(
                             onClick = {
                                 tradeViewModel.callTrade(tradeId = tradeId.toString())
-                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
                             },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = true
+                            enabled = false
                         ) {
                             Text(
                                 text = "Trade",

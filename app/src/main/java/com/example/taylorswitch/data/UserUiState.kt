@@ -28,6 +28,25 @@ data class UserLoginUiState(
     val errorMessage: String? = null
 )
 
+data class Transaction(
+    val amount: Double,
+    val description: String,
+    val date: String
+)
+
+data class WalletUiState(
+    val balance: Double = 0.0,
+    val transactionHistory: List<Transaction> = emptyList(),
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
+)
+
+data class TopUpUiState(
+    val selectedAmount: String = "",
+    val customAmount: String = "",
+    val balance: String = ""
+)
+
 data class UserProfileUiState(
     val username: String = "",
     val email: String = "",

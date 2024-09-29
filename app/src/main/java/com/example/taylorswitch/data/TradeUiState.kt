@@ -16,7 +16,13 @@ data class tradeHistory(
     val id: Long = 0L,
     val title:String = "",
     val live: Boolean = false,
-    val imageRef: List<String> = emptyList()
+    val imageRef: List<String> = emptyList(),
+    val trader: String
+)
+
+data class Trader(
+    val name: String = "",
+    val tradeItem: List<String> = emptyList()
 )
 
 data class TradeUiState(
@@ -24,8 +30,7 @@ data class TradeUiState(
     val description: String = "",
     val category: String = "",
     val owner: String = "",
-    val trader: String = "",
-    val tradeItem: List<String> = emptyList(),
+    val trader: Trader = Trader("", emptyList()),
     val live: Boolean = false,
     val stage: Listing = Listing.Open,
     val tradeStatus: TradeStatus = TradeStatus.Pending,
