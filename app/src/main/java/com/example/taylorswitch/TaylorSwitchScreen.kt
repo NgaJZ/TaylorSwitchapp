@@ -35,14 +35,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.outlined.Gavel
-import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.PostAdd
+import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
@@ -155,6 +154,7 @@ fun TaylorSwitchApp(
         selectedIcon = Icons.Filled.Gavel,
         unselectedIcon = Icons.Outlined.Gavel
     )
+
     val bidRTab = TabBarItem(
         title = "Bid",
         path = TaylorSwitchScreen.BidRecord.name,
@@ -167,6 +167,7 @@ fun TaylorSwitchApp(
         selectedIcon = Icons.Filled.PostAdd,
         unselectedIcon = Icons.Outlined.PostAdd
     )
+
     val bidSessionTB = TopBarItem(
         canNavigateBack = true,
         title = "Bid Session"
@@ -188,7 +189,7 @@ fun TaylorSwitchApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route
     val appUiState by userLoginViewModel.appUiState.collectAsState()
-
+    val tUiState by tradeViewModel.tUiState.collectAsState()
 
     if (!(currentDestination == TaylorSwitchScreen.LoginPage.name || currentDestination == TaylorSwitchScreen.SignUpPage.name)) {
         ModalNavigationDrawer(
@@ -291,6 +292,7 @@ fun TaylorSwitchApp(
                                 navController.navigate(TaylorSwitchScreen.Test.name)
                             }
                         )
+
                         NavigationDrawerItem(
                             label = { Text("login") },
                             selected = false,
@@ -303,6 +305,7 @@ fun TaylorSwitchApp(
                                 navController.navigate(TaylorSwitchScreen.LoginPage.name)
                             }
                         )
+
                         NavigationDrawerItem(
                             label = { Text("logout") },
                             selected = false,
@@ -315,7 +318,7 @@ fun TaylorSwitchApp(
                                 userLoginViewModel.signOut()
                                 navController.navigate(TaylorSwitchScreen.LoginPage.name)
                             }
-                        ) // ...other drawer items
+                        )                // ...other drawer items
 
                         NavigationDrawerItem(
                             label = { Text("Edit Profile") },
@@ -342,16 +345,16 @@ fun TaylorSwitchApp(
                             }
                         )
                         NavigationDrawerItem(
-                            label = { Text("Post Trade") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
+                                label = { Text("Post Trade") },
+                        selected = false,
+                        onClick = {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
                                 }
-                                navController.navigate(TaylorSwitchScreen.PostTrade.name)
                             }
+                            navController.navigate(TaylorSwitchScreen.PostTrade.name)
+                        }
                         )
                         NavigationDrawerItem(
                             label = { Text("Request Trade") },
@@ -414,7 +417,7 @@ fun TaylorSwitchApp(
                             navigateUp = { navController.popBackStack() },
                             onNavigationIconClick = {}
                         )
-                    } else if(currentDestination == TaylorSwitchScreen.BidMainPage.name){
+                    }else if(currentDestination == TaylorSwitchScreen.BidMainPage.name){
                         TaylorSwitchAppBar(
                             title = "Taylor Switch",
                             canNavigateBack = false,
@@ -426,14 +429,14 @@ fun TaylorSwitchApp(
                             }
                             }
                         )
-                    } else if (currentDestination == TaylorSwitchScreen.EditProfilePage.name) {
+                    }else if (currentDestination == TaylorSwitchScreen.EditProfilePage.name) {
                         TaylorSwitchAppBar(
                             title = "Edit Profile",
                             canNavigateBack = true,
                             navigateUp = { navController.popBackStack() },
                             onNavigationIconClick = {}
                         )
-                    } else if(currentDestination == TaylorSwitchScreen.BidPost.name){
+                    }else if(currentDestination == TaylorSwitchScreen.BidPost.name){
                         TaylorSwitchAppBar(
                             title = "Bid Post",
                             canNavigateBack = false,
@@ -458,13 +461,6 @@ fun TaylorSwitchApp(
                                     }
                                 }
                             }
-                        )
-                    }else if (currentDestination == TaylorSwitchScreen.RequestTrade.name) {
-                        TaylorSwitchAppBar(
-                            title = "Trade",
-                            canNavigateBack = true,
-                            navigateUp = { navController.popBackStack() },
-                            onNavigationIconClick = {}
                         )
                     }
                     else {
@@ -491,12 +487,12 @@ fun TaylorSwitchApp(
                 },
                 floatingActionButton = {
                     if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
-                        MainUI(navController = navController)                    }
+                        MainUI(navController = navController)
+                    }
                 }
             )
             { innerPadding ->
                 val uiState by bidViewModel.uiState.collectAsState()
-                val tUiState by tradeViewModel.tUiState.collectAsState()
                 NavHost(
                     navController = navController,
                     startDestination = TaylorSwitchScreen.LoginPage.name,
@@ -513,7 +509,6 @@ fun TaylorSwitchApp(
 
                     composable(route = TaylorSwitchScreen.PostBid.name) {
 //                    viewModel.resetUiState()
-//                        bidViewModel.resetPosting()
                         PostScreen(
                             onPostButtonClicked = {
                                 if(bidViewModel.postBid(poster = appUiState.uid, context = context)){
@@ -660,45 +655,45 @@ fun TaylorSwitchApp(
 
             }
         ) {
-                innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = TaylorSwitchScreen.LoginPage.name,
-                modifier = Modifier.padding(innerPadding)
-            ) {
-                composable(TaylorSwitchScreen.LoginPage.name) {
-                    LoginScreen(
-                        viewModel = userLoginViewModel,
-                        navController = navController,
-                        onSignUpClick = {
-                            navController.navigate(TaylorSwitchScreen.SignUpPage.name)
+            innerPadding ->
+                NavHost(
+                    navController = navController,
+                    startDestination = TaylorSwitchScreen.LoginPage.name,
+                    modifier = Modifier.padding(innerPadding)
+                ) {
+                    composable(TaylorSwitchScreen.LoginPage.name) {
+                            LoginScreen(
+                                viewModel = userLoginViewModel,
+                                navController = navController,
+                                onSignUpClick = {
+                                    navController.navigate(TaylorSwitchScreen.SignUpPage.name)
+                                }
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                            )
                         }
-//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
-//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
-                    )
-                }
-                composable(TaylorSwitchScreen.BidMainPage.name) {
+                    composable(TaylorSwitchScreen.BidMainPage.name) {
 //                        bidViewModel.getUserProfile()
-                    HomeScreen(
-                        viewModel = bidViewModel,
-                        navController = navController
-                    )
-                }
-                composable(TaylorSwitchScreen.SignUpPage.name) {
-                    SignUpScreen(
-                        viewModel = userViewModel,
-                        navController = navController,
+                        HomeScreen(
+                            viewModel = bidViewModel,
+                            navController = navController
+                        )
+                    }
+                    composable(TaylorSwitchScreen.SignUpPage.name) {
+                        SignUpScreen(
+                            viewModel = userViewModel,
+                            navController = navController,
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
-                    )
+                        )
+                    }
+
+                    }
                 }
 
-            }
         }
 
     }
-
-}
 
 
 

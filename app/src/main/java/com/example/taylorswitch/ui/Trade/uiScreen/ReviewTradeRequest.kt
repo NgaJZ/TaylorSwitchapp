@@ -40,7 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchApp
 import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.data.WindowType

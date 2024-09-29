@@ -238,7 +238,7 @@ class BidViewModel
 //        }
 
 
-    // [END get_user_profile]
+        // [END get_user_profile]
 //    }
 
 
@@ -421,14 +421,14 @@ class BidViewModel
 
     }
 
-    fun updateImage(uris: List<Uri>){
-        postImageUris = uris
-        _postUiState.update {currentState ->
-            currentState.copy(
-                imageUris = postImageUris
-            )
-        }
-    }
+ fun updateImage(uris: List<Uri>){
+     postImageUris = uris
+     _postUiState.update {currentState ->
+         currentState.copy(
+             imageUris = postImageUris
+         )
+     }
+ }
 
 
     fun incBidCall() {
@@ -549,7 +549,7 @@ class BidViewModel
         return postSuccess
     }
 
-    //fun resetVM(){
+//fun resetVM(){
 //    imageUris = emptyList()
 //    name = ""
 //    description = ""
@@ -722,7 +722,7 @@ class BidViewModel
 //        }
                 }
             }
-    }
+        }
 //}
 
 
@@ -906,10 +906,10 @@ class BidViewModel
 
 
 
-    fun checkHighestOrNot(highestBidder: String): Boolean {
-        getCurrentUid()
-        return uid == highestBidder
-    }
+fun checkHighestOrNot(highestBidder: String): Boolean {
+    getCurrentUid()
+    return uid == highestBidder
+}
 
     private fun getCurrentUid(){
         uid = firebaseAuth.currentUser?.uid ?: return
