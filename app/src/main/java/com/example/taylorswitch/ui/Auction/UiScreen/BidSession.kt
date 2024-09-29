@@ -231,23 +231,7 @@ fun BidSessionPortrait(
                     )
                 }
 
-                Button(
-                    onClick = {},
-                    enabled = true
-                ) {
-                    Text(
-                        text = "View profile",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            lineHeight = 20.sp,
-//                        fontFamily = FontFamily(Font(R.font.roboto)),
-                            fontWeight = FontWeight(500),
-//                            color = Color(0xFFFFFFFF),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.1.sp,
-                        )
-                    )
-                }
+
 
             }
 
@@ -459,7 +443,6 @@ fun BidSessionLandscape(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .height(IntrinsicSize.Min)
-//        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
             modifier = Modifier
@@ -578,24 +561,6 @@ fun BidSessionLandscape(
                 }
 
 
-
-                Button(
-                    onClick = {
-                        //todo: navigate to profile
-                    },
-                    enabled = true
-                ) {
-                    Text(
-                        text = "View profile",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            lineHeight = 20.sp,
-                            fontWeight = FontWeight(500),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 0.1.sp,
-                        )
-                    )
-                }
 
             }
 
@@ -767,12 +732,14 @@ fun BidSessionLandscape(
 
 
 
-                if(bidUiState.live){
+                if(bidViewModel.isCallNotValid() || !bidUiState.live || bidViewModel.uid == bidUiState.poster){
                     Button(
-                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
+                        onClick = {
+                            bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
+                        },
                         shape = RoundedCornerShape(size = 8.dp),
-                        enabled = true
+                        enabled = false
                     ) {
                         Text(
                             text = "Bid",
@@ -785,12 +752,11 @@ fun BidSessionLandscape(
                     }
                 }else{
                     Button(
-                        onClick = {
-                            bidViewModel.callBid(auctionId = auctionId.toString())
-                            navController.navigate(TaylorSwitchScreen.BidRecord.name)
-                        },
+//                    colors = ButtonColors(Color(0xFF2C2C2C), Color(0xFF2C2C2C),Color(0xFF2C2C2C),Color(0xFF2C2C2C)),
+                        onClick = { bidViewModel.callBid(auctionId = auctionId.toString())
+                            navController.navigate(TaylorSwitchScreen.BidRecord.name) },
                         shape = RoundedCornerShape(size = 8.dp),
-                        enabled = false
+                        enabled = true
                     ) {
                         Text(
                             text = "Bid",

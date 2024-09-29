@@ -26,11 +26,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.SyncAlt
 import androidx.compose.material.icons.outlined.Edit
@@ -62,11 +64,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,11 +82,13 @@ import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.rememberImagePainter
 import com.example.taylorswitch.data.MiniFabItems
 import com.example.taylorswitch.data.TabBarItem
 import com.example.taylorswitch.data.TopBarItem
 import com.example.taylorswitch.ui.Auction.UiScreen.BidHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.BidSession
+
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostHistoryScreen
@@ -93,12 +100,11 @@ import com.example.taylorswitch.ui.Trade.uiScreen.ReviewTradeRequest
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeHistoryScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeListScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeRequestScreen
+import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
-import com.example.taylorswitch.ui.theme.AppViewModelProvider
-import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
@@ -132,7 +138,7 @@ enum class TaylorSwitchScreen() {
 @Composable
 fun TaylorSwitchApp(
     bidViewModel: BidViewModel = viewModel(
-//        factory = AppViewModelProvider.Factory
+        factory = AppViewModelProvider.Factory
     ),
     tradeViewModel: TradeViewModel = viewModel(),
     userLoginViewModel: UserLoginViewModel = viewModel(),
@@ -151,7 +157,7 @@ fun TaylorSwitchApp(
 
     val tradeTab = TabBarItem(
         title = "Trade",
-        path = TaylorSwitchScreen.PostBid.name,
+        path = TaylorSwitchScreen.TradeHomePage.name,
         selectedIcon = Icons.Filled.SyncAlt,
         unselectedIcon = Icons.Outlined.SyncAlt
     )
@@ -190,7 +196,7 @@ fun TaylorSwitchApp(
 
 
     // creating a list of all the tabs
-    val tabBarItems = listOf(tradeTab, bidTab)
+    val tabBarItems = listOf(bidTab, tradeTab)
     val bidBarItems = listOf(bidRTab, bidPTab)
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -216,33 +222,36 @@ fun TaylorSwitchApp(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 10.dp),
+                                .padding(start = 35.dp, top = 35.dp),
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Image(
-                                painter = painterResource(R.drawable.ic_launcher_foreground),
-                                contentDescription = "user"
-                            )
-                            Text(text = appUiState.username, fontSize = 15.sp)
-                        }
-                    }
+                            if(appUiState.userImage != ""){
+                                Image(
+                                    painter = rememberImagePainter(data = appUiState.userImage),
+                                    contentDescription = "user",
+                                    modifier = Modifier.size(70.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.FillBounds
 
-                NavigationDrawerItem(
-                    label = { Text("My Wallet") },
-                    selected = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                                )
+                            }else {
+                                Image(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "user",
+                                    modifier = Modifier.size(200.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.FillBounds
+                                )
                             }
+                            Text(modifier = Modifier.padding(10.dp), text = appUiState.username, fontSize = 17.sp, fontWeight = FontWeight(600))
                         }
-                        navController.navigate(TaylorSwitchScreen.WalletPage.name)
                     }
-                )
-                    Column() {
 
-                        Text("Bid History", modifier = Modifier.padding(16.dp))
-                        HorizontalDivider()
+
+                    Column( modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 30.dp)) {
+                        HorizontalDivider(thickness = 1.dp)
                         NavigationDrawerItem(
                             icon = {
                                 Icon(
@@ -572,27 +581,27 @@ fun TaylorSwitchApp(
 //                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
-                            bidUiState = uiState,
                             bidViewModel = bidViewModel,
                             navController = navController
                         )
                     }
 
                     composable(TaylorSwitchScreen.BidPost.name) {
-
-                        bidViewModel.getUserHistoryArray("userPost", "postRef")
+//                        bidViewModel.resetHistoryArray()
+                        bidViewModel.getPostHistoryArray("userPost", "postRef")
                         PostHistoryScreen(
                             bidViewModel = bidViewModel,
-                            list = uiState.historyRecArr,
+                            list = uiState.historyPostRecArr,
                             navController = navController
 
                         )
                     }
                     composable(TaylorSwitchScreen.BidRecord.name) {
+//                        bidViewModel.resetHistoryArray()
                         bidViewModel.getUserHistoryArray("userBid", "bidRef")
                         BidHistoryScreen(
                             bidViewModel = bidViewModel,
-                            list = uiState.historyRecArr,
+                            list = uiState.historyBidRecArr,
                             navController = navController
 
                         )
@@ -601,6 +610,7 @@ fun TaylorSwitchApp(
 //                    MultiplePhotoPicker()
 //                        SignUpScreen(userViewModel, navController)
                     }
+
                     composable(TaylorSwitchScreen.LoginPage.name) {
                         LoginScreen(
                             viewModel = userLoginViewModel,

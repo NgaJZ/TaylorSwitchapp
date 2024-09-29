@@ -11,6 +11,7 @@ import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -36,7 +37,9 @@ object AppViewModelProvider {
         initializer {
             TopUpViewModel()
         }
-
+        initializer {
+            WalletViewModel()
+        }
     }
 }
 

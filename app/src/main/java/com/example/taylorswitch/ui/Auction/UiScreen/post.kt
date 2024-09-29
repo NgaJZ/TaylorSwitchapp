@@ -82,21 +82,11 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostScreen(
-//    title:String = "",
-//    onTitleChanged:(String) -> Unit,
-//    description: String = "",
-//    onDescriptionChanged:(String) -> Unit,
-//    startBidAmount: String = "",
-//    onStartBidAmountChanged: (String) -> Unit,
-//    minBidAmount: String = "",
-//    onMinBidChanged: (String) -> Unit,
-
     bidViewModel: BidViewModel = viewModel(),
     onPostButtonClicked: () -> Unit,
     onCancelButtonClicked: () -> Unit
 ) {
 
-//    bidViewModel.resetVM()
     val postUiState by bidViewModel.postUiState.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -179,7 +169,7 @@ fun PostScreen(
                 onValueChange = { bidViewModel.updateListingTitle(it) },
                 label = {
                     if(postUiState.titleValid){
-                    Text("Listing Title")
+                    Text("Auction Title")
                 }else{
                     Text("Error", color = Color.Red)
                 }
@@ -475,6 +465,12 @@ fun PostScreen(
                             )
                         }
                         item {
+                            Card(
+                                modifier = Modifier
+                                    .width(149.dp)
+                                    .height(194.dp),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
                             IconButton(
                                 modifier = Modifier
                                     .width(149.dp)
@@ -489,6 +485,7 @@ fun PostScreen(
                                     contentDescription = "Add Image"
                                 )
                             }
+                                }
                         }
                     }
                 }
@@ -511,7 +508,11 @@ fun PostScreen(
                                 .height(60.dp),
                             value = postUiState.title,
                             onValueChange = { bidViewModel.updateListingTitle(it) },
-                            label = { Text("Listing Title") },
+                            label = { if(postUiState.titleValid){
+                                Text("Auction Title")
+                            }else{
+                                Text("Error", color = Color.Red)
+                            } },
                             trailingIcon = {
                                 IconButton(onClick = { bidViewModel.updateListingTitle("") }) {
                                     Icon(
@@ -559,7 +560,15 @@ fun PostScreen(
                                 value = postUiState.startBidInput,
                                 onValueChange = { bidViewModel.updateStartBidAmount(it) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                label = { Text("Start Bid") },
+                                label = {if (!postUiState.startBidValid) {
+                                    Text(
+                                        "Error",
+                                        color = Color.Red
+                                    )
+
+                                } else {
+                                    Text("Start Bid")
+                                }},
                             )
                             OutlinedTextField(
                                 modifier = Modifier
@@ -570,7 +579,14 @@ fun PostScreen(
                                 value = postUiState.minBidInput,
                                 onValueChange = { bidViewModel.updateMinBidAmount(it) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                label = { Text("Min Bid") }
+                                label = { if (postUiState.minBidValid) {
+                                    Text("Min Call Up")
+                                } else {
+                                    Text(
+                                        "Error",
+                                        color = Color.Red
+                                    )
+                                } }
                             )
                         }
                         Box(
@@ -581,7 +597,14 @@ fun PostScreen(
                             OutlinedTextField(
                                 value = postUiState.endDate,
                                 onValueChange = {},
-                                label = { Text("End Date") },
+                                label = { if (postUiState.endDateStatus == EndDateStatus.Before) {
+                                    Text(
+                                        "Error",
+                                        color = Color.Red
+                                    )
+                                } else {
+                                    Text("End Date")
+                                } },
                                 readOnly = true,
                                 trailingIcon = {
                                     IconButton(onClick = { showDatePicker = !showDatePicker }) {
@@ -647,7 +670,14 @@ fun PostScreen(
                             OutlinedTextField(
                                 value = postUiState.endTime,
                                 onValueChange = {},
-                                label = { Text("End Time") },
+                                label = {  if (postUiState.endDateStatus == EndDateStatus.Now && (postUiState.endTimeStatus == EndDateStatus.Before || postUiState.endTimeStatus == EndDateStatus.Now)) {
+                                    Text(
+                                        "Error",
+                                        color = Color.Red
+                                    )
+                                } else {
+                                    Text("End Time")
+                                } },
                                 readOnly = true,
                                 trailingIcon = {
                                     IconButton(onClick = { showTimePicker = !showTimePicker }) {
@@ -716,15 +746,29 @@ fun PostScreen(
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(50.dp))
-                    Button(
-                        modifier = Modifier
-                            .padding(0.dp)
-                            .width(220.dp)
-                            .height(44.dp),
-                        onClick = onPostButtonClicked,
-                        enabled = true
-                    ) {
-                        Text("Post")
+                    if(postUiState.titleValid && postUiState.startBidValid && postUiState.minBidValid && (postUiState.endDateStatus == EndDateStatus.After || (postUiState.endDateStatus == EndDateStatus.Now && postUiState.endTimeStatus == EndDateStatus.After))){
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(220.dp)
+                                .height(44.dp),
+                            onClick = onPostButtonClicked,
+                            enabled = true
+                        ) {
+                            Text("Post")
+                        }
+                    }else {
+
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(220.dp)
+                                .height(44.dp),
+                            onClick = onPostButtonClicked,
+                            enabled = false
+                        ) {
+                            Text("Post")
+                        }
                     }
 
                 }

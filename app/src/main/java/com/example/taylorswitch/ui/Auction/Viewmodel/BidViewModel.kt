@@ -690,7 +690,8 @@ class BidViewModel(private val auctionsRepository: AuctionsRepository) : ViewMod
                 highestBidder = Bidder("", 0.0),
                 historyBidder = emptyList(),
                 stage = ListingStage.Live,
-                historyRecArr = emptyList(),
+                historyBidRecArr = emptyList(),
+                historyPostRecArr =emptyList(),
                 imageRef = emptyList(),
                 imageUris = emptyList()
             )
@@ -989,7 +990,7 @@ class BidViewModel(private val auctionsRepository: AuctionsRepository) : ViewMod
                             // Update the UI state once all documents are fetched and sorted
                             _uiState.update { currentState ->
                                 currentState.copy(
-                                    historyRecArr = postList
+                                    historyBidRecArr = postList
                                 )
                             }
                         }
@@ -997,7 +998,7 @@ class BidViewModel(private val auctionsRepository: AuctionsRepository) : ViewMod
                         // No references, set an empty list
                         _uiState.update { currentState ->
                             currentState.copy(
-                                historyRecArr = emptyList()
+                                historyBidRecArr = emptyList()
                             )
                         }
                     }
@@ -1007,11 +1008,104 @@ class BidViewModel(private val auctionsRepository: AuctionsRepository) : ViewMod
                 Log.e("Firestore", "Error getting document: $exception")
                 _uiState.update { currentState ->
                     currentState.copy(
-                        historyRecArr = emptyList()
+                        historyBidRecArr = emptyList()
                     )
                 }
             }
     }
+
+    fun getPostHistoryArray(document: String, field: String) {
+        val postList = mutableListOf<historyRec>()
+        getCurrentUid()
+
+        // Fetch the document containing the references
+        db.collection("user").document(uid).collection("userBidRec")
+            .document(document)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    // Get the array of document references
+                    val historyRefArray = documentSnapshot.get(field) as? List<DocumentReference>
+
+                    if (!historyRefArray.isNullOrEmpty()) {
+                        val tasks = historyRefArray.map { ref ->
+                            // Fetch each referenced document
+                            ref.get()
+                        }
+
+                        // When all documents are fetched
+                        Tasks.whenAllComplete(tasks).addOnSuccessListener { completedTasks ->
+                            completedTasks.forEach { task ->
+                                // Check if the task was successful
+                                if (task.isSuccessful) {
+                                    val resultSnapshot = task.result as DocumentSnapshot
+
+                                    if (resultSnapshot.exists()) {
+                                        // Extract history record from each fetched document
+                                        val history = historyRec(
+                                            id = resultSnapshot.getLong("id") ?: 0L,
+                                            name = resultSnapshot.getString("name") ?: "",
+                                            highestBid = resultSnapshot.getLong("highestBid") ?: 0L,
+                                            endDate = resultSnapshot.getString("endDate") ?: "",
+                                            endTime = resultSnapshot.getString("endTime") ?: "",
+                                            timeLeft = formatTimeLeft(
+                                                calculateTimeLeft(
+                                                    resultSnapshot.getString("endDate") ?: "",
+                                                    resultSnapshot.getString("endTime") ?: ""
+                                                )
+                                            ),
+                                            live = resultSnapshot.getBoolean("live") ?: false,
+                                            imageRef = resultSnapshot.get("imageRef") as? List<String>
+                                                ?: emptyList(),
+                                            highestBidder = resultSnapshot.getString("highestBidder") ?: ""
+                                        )
+
+                                        postList.add(history)
+                                    }
+                                } else {
+                                    // Handle failed document fetches (optional logging)
+                                    Log.e("Firestore", "Error fetching document: ${task.exception}")
+                                }
+                            }
+
+                            // Sorting logic: Parse and combine `endDate` and `endTime`
+                            postList.sortWith(compareByDescending<historyRec> {
+                                // Parse the endDate first
+                                val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+                                dateFormat.parse(it.endDate) ?: Date(0)
+                            }.thenByDescending {
+                                // Parse the endTime (assume "hh:mm a" format like "04:23 PM")
+                                val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                                timeFormat.parse(it.endTime) ?: Date(0)
+                            })
+
+                            // Update the UI state once all documents are fetched and sorted
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    historyPostRecArr = postList
+                                )
+                            }
+                        }
+                    } else {
+                        // No references, set an empty list
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                historyPostRecArr = emptyList()
+                            )
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Firestore", "Error getting document: $exception")
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        historyPostRecArr = emptyList()
+                    )
+                }
+            }
+    }
+
 
     fun checkHighestOrNot(highestBidder: String): Boolean {
         getCurrentUid()
@@ -1027,6 +1121,13 @@ class BidViewModel(private val auctionsRepository: AuctionsRepository) : ViewMod
         return doubleValue != null
     }
 
+//    fun resetHistoryArray(){
+//        _uiState.update { currentState ->
+//            currentState.copy(
+//                historyRecArr = emptyList()
+//            )
+//        }
+//    }
 //    fun getOfflineList(): List<AuctionPostLocal> {
 //        val flowOfLists = auctionsRepository.getAllAuctionsStream()
 //        val list = flowOfLists.flattenToList()
