@@ -1,6 +1,7 @@
 package com.example.taylorswitch.data.fireStore.model
 
 data class User(
+    val username: String = "",
     val email: String = "",
     val password: String = "",
     val isPasswordVisible: Boolean = false,

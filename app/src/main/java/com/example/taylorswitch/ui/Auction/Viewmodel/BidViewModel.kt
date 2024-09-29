@@ -14,23 +14,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.taylorswitch.data.AppUiState
 import com.example.taylorswitch.data.BidUiState
 import com.example.taylorswitch.data.Bidder
 import com.example.taylorswitch.data.ListingStage
 import com.example.taylorswitch.data.fireStore.model.Auction
-import com.example.taylorswitch.data.localDatabase.AuctionPostLocal
 import com.example.taylorswitch.data.historyRec
-import com.example.taylorswitch.data.localDatabase.AuctionsRepository
+import com.example.taylorswitch.data.PostUiState
+import com.example.taylorswitch.data.fireStore.model.User
 import com.example.taylorswitch.util.StorageUtil
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.getField
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +44,7 @@ import kotlinx.coroutines.flow.update
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -49,13 +56,38 @@ class BidViewModel
     private val _uiState = MutableStateFlow(BidUiState())
     val uiState: StateFlow<BidUiState> = _uiState.asStateFlow()
 
+    private val _postUiState = MutableStateFlow(PostUiState())
+    val postUiState: StateFlow<PostUiState> = _postUiState.asStateFlow()
+
+    private val _appUiState = MutableStateFlow(AppUiState())
+    val appUiState: StateFlow<AppUiState> = _appUiState.asStateFlow()
+
+    private val _posterUiState = MutableStateFlow(PostUiState())
+    val posterUiState: StateFlow<PostUiState> = _posterUiState.asStateFlow()
+
+
     var name by mutableStateOf("")
     var description by mutableStateOf("")
     var startAmount by mutableStateOf("")
     var minAmount by mutableStateOf("")
     var poster by mutableStateOf("")
+
     var endDate by mutableStateOf("")
     var endTime by mutableStateOf("")
+
+
+    var postTitle by mutableStateOf("")
+    var postDesc by mutableStateOf("")
+    var postStart by mutableStateOf("")
+    var postMin by mutableStateOf("")
+    var postPoster by mutableStateOf("")
+
+    var postEndDate by mutableStateOf("")
+    var postEndTime by mutableStateOf("")
+
+
+
+
 
     //    var _imageUrl = MutableStateFlow<List<String>>(emptyList())
 //    var imageUrl = _imageUrl.asStateFlow()
@@ -79,19 +111,71 @@ class BidViewModel
     private var _auction = MutableStateFlow<Auction?>(null)
     var auction = _auction.asStateFlow()
 
+    private var _posterDB = MutableStateFlow<User?>(null)
+    var posterDB = _posterDB.asStateFlow()
+
+
     //store image to firebase storage
     var imageUris by mutableStateOf<List<Uri>>(emptyList())
+    var postImageUris by mutableStateOf<List<Uri>>(emptyList())
 
     var auctionUiState by mutableStateOf(AuctionUiState())
         private set
 
-    val userFirestorePath = db.collection("user").document("0").collection("userBidRec")
 
+    var uid by mutableStateOf("")
+    var username by mutableStateOf("")
+    var posterName by mutableStateOf("")
+    val userFirestorePath = db.collection("user").document("0").collection("userBidRec")
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firebaseStorage = FirebaseStorage.getInstance()
     init {
 //        getAuctionById()
+//getUserProfile()
+//        fetchUserProfile()
         getAuctionList()
     }
 
+//    fun fetchUserProfile() {
+//        uid = firebaseAuth.currentUser?.uid ?: return
+//
+//    }
+
+
+    fun getUserProfileByUid(uid: String) {
+
+        db.collection("user").document(uid)
+            .get()
+            .addOnSuccessListener { userSnapshot ->
+                // Check if the document exists
+                if (userSnapshot.exists()) {
+                    // Fetch the username from Firestore
+                    val posterName = userSnapshot.getString("username") ?: ""
+
+                    Log.d("Firestore", "Username: $posterName")
+
+                    // Update the UI state with the fetched username
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            posterName = posterName // update with the fetched username
+                        )
+                    }
+                } else {
+                    Log.e("FirestoreError", "No document found with UID: $uid")
+                    // Handle case when document doesn't exist (you might want to set a default value)
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            posterName = "Unknown User"
+                        )
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Handle any failure in retrieving the document
+                Log.e("FirestoreError", "Error fetching user profile", exception)
+            }
+    }
 
     data class AuctionUiState(
         val id: Int = 0,
@@ -108,6 +192,59 @@ class BidViewModel
         val isUploaded: Boolean = false, // Track whether the auction is uploaded to Firestore
         val live: Boolean = false
     )
+
+//    fun getUserProfile() {
+//        // [START get_user_profile]
+//
+//            uid =  firebaseAuth.currentUser?.uid ?: return
+//
+//            firestore.collection("user").document(userId)
+//                .get()
+//                .addOnSuccessListener { document ->
+//                    document?.let {
+//                        val data = document.data ?: return@addOnSuccessListener
+//                        uiState = uiState.copy(
+//                            username = data["username"] as String? ?: "",
+//                            email = data["email"] as String? ?: "",
+//                            phoneNumber = data["phoneNumber"] as String? ?: "",
+//                            dateOfBirth = data["dateOfBirth"] as String? ?: "",
+//                            address = data["address"] as String? ?: ""
+//                        )
+//                    }
+//                }
+//                .addOnFailureListener { e ->
+//                    uiState = uiState.copy(errorMessage = e.message)
+//                }
+
+//        val user = Firebase.auth.currentUser
+//        user?.let {
+//            // Name, email address, and profile photo Url
+//            username = it.displayName.toString()
+//            val email = it.email
+////            photoUrl = it.photoUrl
+//
+//            // Check if user's email is verified
+//            val emailVerified = it.isEmailVerified
+//
+//            // The user's ID, unique to the Firebase project. Do NOT use this value to
+//            // authenticate with your backend server, if you have one. Use
+//            // FirebaseUser.getIdToken() instead.
+//            uid = it.uid
+//        }
+//        _appUiState.update { currentContext->
+//            currentContext.copy(
+//                username = username
+//            )
+//        }
+
+
+        // [END get_user_profile]
+//    }
+
+
+
+
+
 
 //    fun resetViewModel(){
 //        name = ""
@@ -158,109 +295,108 @@ class BidViewModel
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 _auction.value = documentSnapshot.toObject()
-            }
 
-        _auction.value?.let { auctionData ->
-            name = auctionData.name
-            description = auctionData.description
-            startAmount = (auctionData.basePrice).toString()
-            minAmount = (auctionData.minBid).toString()
-            minCallAmount = (auctionData.minCall).toString()
-            highest = (auctionData.highestBid)
-            highestBidder = Bidder(auctionData.highestBidder, auctionData.highestBid)
-            endDate = (auctionData.endDate)
-            endTime = (auctionData.endTime)
-            imageRef = auctionData.imageRef
-            bidCallAmount = auctionData.highestBid.toString()
-            liveAuction = auctionData.live
+                _auction.value?.let { auctionData ->
+                    name = auctionData.name
+                    description = auctionData.description
+                    startAmount = (auctionData.basePrice).toString()
+                    minAmount = (auctionData.minBid).toString()
+                    minCallAmount = (auctionData.minCall).toString()
+                    highest = (auctionData.highestBid)
+                    highestBidder = Bidder(auctionData.highestBidder, auctionData.highestBid)
+                    endDate = (auctionData.endDate)
+                    endTime = (auctionData.endTime)
+                    imageRef = auctionData.imageRef
+                    bidCallAmount = auctionData.highestBid.toString()
+                    liveAuction = auctionData.live
+                    poster = (auctionData.poster)
 //            highest = (auctionData.highest).toString()
 //            endTimeStamp = (auctionData.endTimestamp).toString()
-        }
-        val startBidAmount = startAmount.toDoubleOrNull() ?: 0.0
-        val minBidAmount = minAmount.toDoubleOrNull() ?: 0.0
-        _uiState.update { currentState ->
-            currentState.copy(
-                title = name,
-                description = description,
-                startBidAmount = startBidAmount,
-                minCallUp = minBidAmount,
-                poster = poster,
-                endDate = endDate,
-                endTime = endTime,
+                }
+                val startBidAmount = startAmount.toDoubleOrNull() ?: 0.0
+                val minBidAmount = minAmount.toDoubleOrNull() ?: 0.0
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        title = name,
+                        description = description,
+                        startBidAmount = startBidAmount,
+                        minCallUp = minBidAmount,
+                        poster = poster,
+                        endDate = endDate,
+                        endTime = endTime,
 //                endTimeStamp = endTimeStamp.toString(),
-                highestBid = highest,
-                minCall = highest + minBidAmount,
-                imageRef = imageRef,
-                highestBidder = highestBidder,
-                live = liveAuction
-            )
-
-        }
-
-//        minCallAmount = (highest+minBidAmount).toString()
+                        highestBid = highest,
+                        minCall = highest + minBidAmount,
+                        imageRef = imageRef,
+                        highestBidder = highestBidder,
+                        live = liveAuction
+                    )
+                }
+                getUserProfileByUid(poster)
+            }
     }
 
 
     fun updateListingTitle(ListingTitle: String) {
-        name = ListingTitle
-        _uiState.update { currentState ->
+        postTitle = ListingTitle
+        _postUiState.update { currentState ->
             currentState.copy(
-                title = name
+                title = postTitle
             )
         }
     }
 
     fun updateListingDescription(ListingDescription: String) {
-        description = ListingDescription
-        _uiState.update { currentState ->
+        postDesc = ListingDescription
+        _postUiState.update { currentState ->
             currentState.copy(
-                description = description
+                description = postDesc
             )
         }
     }
 
 
     fun updateStartBidAmount(startBidAmount: String) {
-        startAmount = startBidAmount
-        _uiState.update { currentState ->
+        postStart = startBidAmount
+        _postUiState.update { currentState ->
             currentState.copy(
-                startBidInput = startAmount
+                startBidInput = postStart
             )
         }
     }
 
     fun updateMinBidAmount(minBidAmount: String) {
-        minAmount = minBidAmount
-        _uiState.update { currentState ->
+        postMin = minBidAmount
+        _postUiState.update { currentState ->
             currentState.copy(
-                minBidInput = minAmount
+                minBidInput = postMin
             )
         }
     }
 
     fun updatePoster(posterName: String) {
-        poster = posterName
+        postPoster = posterName
         _uiState.update { currentState ->
             currentState.copy(
-                poster = poster
+                poster = postPoster
             )
         }
     }
 
     fun updateEndDate(endDateInput: String) {
-        endDate = endDateInput
-        _uiState.update { currentState ->
+        postEndDate = endDateInput
+        _postUiState.update { currentState ->
             currentState.copy(
-                endDate = endDate
+                endDate = postEndDate
             )
         }
     }
 
     fun updateEndTime(endTimeInput: String) {
-        endTime = endTimeInput
-        _uiState.update { currentState ->
+        postEndTime = endTimeInput
+        _postUiState.update { currentState ->
             currentState.copy(
-                endTime = endTime
+                endTime = postEndTime
             )
         }
     }
@@ -278,8 +414,22 @@ class BidViewModel
         val amountInput = amount.toDoubleOrNull() ?: 0.0
         if (amountInput >= min + (highestBidder.bidAmount)) {
             bidCallAmount = amount
+            _uiState.update {currentState ->
+                currentState.copy(callAmount = bidCallAmount)
+            }
         }
+
     }
+
+ fun updateImage(uris: List<Uri>){
+     postImageUris = uris
+     _postUiState.update {currentState ->
+         currentState.copy(
+             imageUris = postImageUris
+         )
+     }
+ }
+
 
     fun incBidCall() {
         val bidCall = bidCallAmount.toDoubleOrNull() ?: 0.0
@@ -297,6 +447,7 @@ class BidViewModel
     }
 
     fun isCallNotValid(): Boolean {
+        getCurrentUid()
         val bidCall = bidCallAmount.toDoubleOrNull() ?: 0.0
         val minBid = minAmount.toDoubleOrNull() ?: 0.0
         if (bidCall >= (highestBidder.bidAmount + minBid)) {
@@ -305,24 +456,26 @@ class BidViewModel
         return true
     }
 
-    fun callBid(bidder: String = "test", auctionId: String) {
+    fun callBid(auctionId: String) {
+        getCurrentUid()
         val bidCall = bidCallAmount.toDoubleOrNull() ?: 0.0
         if (!isCallNotValid()) {
-
-            updateBid(Bidder(name = bidder, bidAmount = bidCall), auctionId = auctionId)
-
+            if(poster != uid) {
+                updateBid(Bidder(name = uid, bidAmount = bidCall), auctionId = auctionId)
+            }
         }
     }
 
     //    @RequiresApi(Build.VERSION_CODES.O)
 //    @SuppressLint("ServiceCast")
-    fun postBid(context: Context) {
-        val startBidAmount = startAmount.toDoubleOrNull() ?: 0.0
-        val minBidAmount = minAmount.toDoubleOrNull() ?: 0.0
+    fun postBid(poster:String, context: Context) : Boolean{
+        getCurrentUid()
+        val startBidAmount = postStart.toDoubleOrNull() ?: 0.0
+        val minBidAmount = postMin.toDoubleOrNull() ?: 0.0
 
+        var postSuccess : Boolean = false
 
-
-        if (name != "" && startBidAmount != 0.0 && minBidAmount != 0.0 && endDate != "" && endTime != "" && imageUris.isNotEmpty()) {
+        if (postTitle != "" && startBidAmount != 0.0 && minBidAmount != 0.0 && postEndDate != "" && postEndTime != "" && postImageUris.isNotEmpty()) {
             db.collection("auction").orderBy("id", Query.Direction.DESCENDING)
                 .limit(1) // Limit to 1 to get the highest document ID
                 .get()
@@ -337,26 +490,27 @@ class BidViewModel
 
                     val auction = hashMapOf(
                         "id" to newAuctionId,
-                        "name" to name,
-                        "description" to description,
+                        "name" to postTitle,
+                        "description" to postDesc,
                         "basePrice" to startBidAmount,
                         "minBid" to minBidAmount,
-                        "endDate" to endDate,
-                        "endTime" to endTime,
+                        "endDate" to postEndDate,
+                        "endTime" to postEndTime,
                         "minCall" to startBidAmount + minBidAmount,
                         "highestBidder" to "",
-                        "highestBid" to 0.0,
-                        "live" to true
+                        "highestBid" to startBidAmount,
+                        "live" to true,
+                        "poster" to uid
                     )
 
                     val postReference = db.collection("auction").document(newAuctionId.toString())
 
                     // Step 2: Store the new auction with the incremented ID
-                    postReference
-                        .set(auction)
+                    db.collection("auction").document(newAuctionId.toString())
+                        .set(auction, SetOptions.merge())
                         .addOnSuccessListener {
                             // Auction successfully stored
-                            imageUris.forEach { uri ->
+                            postImageUris.forEach { uri ->
 
                                 uri?.let {
                                     StorageUtil.uploadToStorage(
@@ -368,12 +522,13 @@ class BidViewModel
                                     )
                                 }
                             }
-                            userFirestorePath.document("userPost")
-                                .update("postRef", FieldValue.arrayUnion(postReference))
+                            db.collection("user").document(uid).collection("userBidRec").document("userPost")
+                                .set(hashMapOf("postRef" to FieldValue.arrayUnion(postReference)), SetOptions.merge())
                             Log.d("document", "CREATED")
                             resetPosting()
-                            resetUiState()
+                            postSuccess = true
                         }
+
                 }
                 .addOnFailureListener {
                     Toast.makeText(
@@ -382,29 +537,38 @@ class BidViewModel
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
         } else {
             Toast.makeText(
                 context,
                 "Please filled up all the details",
                 Toast.LENGTH_SHORT
             ).show()
+
         }
+        return postSuccess
     }
 
-
+//fun resetVM(){
+//    imageUris = emptyList()
+//    name = ""
+//    description = ""
+//    startAmount = ""
+//    minAmount = ""
+//    poster = ""
+//    endDate = ""
+//    endTime = ""
+//}
     fun resetPosting() {
-        imageUris = emptyList()
-        name = ""
-        description = ""
-        startAmount = ""
-        minAmount = ""
-        poster = ""
-        endDate = ""
-        endTime = ""
-    }
-
-    fun resetUiState() {
-        _uiState.update { currentState ->
+        postImageUris = emptyList()
+        postTitle = ""
+        postDesc = ""
+        postStart = ""
+        postMin = ""
+        postPoster = ""
+        postEndDate = ""
+        postEndTime = ""
+        _postUiState.update { currentState ->
             currentState.copy(
                 endDate = " ",
                 endTime = "",
@@ -418,14 +582,19 @@ class BidViewModel
                 success = false,
                 highestBid = 0.0,
                 minCall = 0.0,
+                startBidInput = "",
+                minBidInput = "",
                 highestBidder = Bidder("", 0.0),
                 historyBidder = emptyList(),
                 stage = ListingStage.Live,
                 historyRecArr = emptyList(),
-                imageRef = emptyList()
+                imageRef = emptyList(),
+                imageUris = emptyList()
             )
         }
     }
+
+
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -465,149 +634,98 @@ class BidViewModel
     }
 
 
-//    private fun combineDateTime(dateString: String, timeString: String): Timestamp? {
-//        // Define date and time formatters
-//        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-//        val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-//
-//        try {
-//            // Parse the date and time strings into Date objects
-//            val date = dateFormat.parse(dateString)
-//            val time = timeFormat.parse(timeString)
-//
-//            if (date != null && time != null) {
-//                // Use Calendar to combine date and time
-//                val calendar = Calendar.getInstance()
-//
-//                // Set the parsed date
-//                calendar.time = date
-//
-//                // Extract hours and minutes from the parsed time and set it on the date
-//                val timeCalendar = Calendar.getInstance()
-//                timeCalendar.time = time
-//                calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
-//                calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
-//                calendar.set(Calendar.SECOND, 0)
-//                calendar.set(Calendar.MILLISECOND, 0)
-//
-//                // Convert the combined date and time to a Firestore Timestamp
-//                val combinedDate = calendar.time
-//                return Timestamp(combinedDate)
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//
-//        return null // Return null if there was a parsing error
-//    }
-
     private fun updateBid(bidder: Bidder, auctionId: String) {
-
+        getCurrentUid()
         var live: Boolean = false
         db.collection("auction").document(auctionId).get()
             .addOnSuccessListener { documentSnapshot ->
                 _auction.value = documentSnapshot.toObject()
-            }
 
-        auction.value?.let { auctionData ->
-            live = auctionData.live
-        }
 
-        if (live) {
-//            val updatedBidderList = ArrayList(_uiState.value.historyBidder)
-//            updatedBidderList.add(bidder)
-            _uiState.update { currentState ->
-                currentState.copy(
-//                    historyBidder = updatedBidderList,
-                    highestBidder = bidder
-                )
-            }
-            //add to bidder collection in auction collection
-            db.collection("auction").document(auctionId).collection("bidder")
-                .orderBy("bidId", Query.Direction.DESCENDING)
-                .limit(1) // Limit to 1 to get the highest document ID
-                .get()
-                .addOnSuccessListener { documents ->
-                    var newBidId = 1 // Default starting ID
-
-                    // If there is at least one document, parse the last document ID and increment it
-                    if (!documents.isEmpty) {
-                        val lastDocId = documents.documents[0].id
-                        newBidId = (lastDocId.toIntOrNull() ?: 0) + 1
-                    }
-                    val bidderR = hashMapOf(
-                        "bidId" to newBidId,
-                        "name" to bidder.name,
-                        "bid amount " to bidder.bidAmount
-                    )
-
-                    val bidReference = db.collection("auction").document(auctionId)
-                    val minCall = bidder.bidAmount + (minAmount.toDoubleOrNull() ?: 0.0)
-                    bidReference
-                        .update("bidArray", FieldValue.arrayUnion(bidderR))
-                        .addOnSuccessListener {
-                            // Auction successfully stored
-                            bidReference
-                                .update(
-                                    mapOf(
-                                        "highestBidder" to bidder.name,
-                                        "highestBid" to bidder.bidAmount,
-                                        "minCall" to minCall
-                                    )
-                                )
-                                .addOnSuccessListener {
-                                    userFirestorePath.document("userBid")
-                                        .update("bidRef", FieldValue.arrayUnion(bidReference))
-                                }
-                            Log.d("document", "CREATED")
-                        }
+                auction.value?.let { auctionData ->
+                    live = auctionData.live
                 }
 
+                if (live) {
+//            val updatedBidderList = ArrayList(_uiState.value.historyBidder)
+//            updatedBidderList.add(bidder)
+                    _uiState.update { currentState ->
+                        currentState.copy(
+//                    historyBidder = updatedBidderList,
+                            highestBidder = bidder
+                        )
+                    }
+                    bidCallAmount = bidder.bidAmount.toString()
 
-        val updatedBidderList = ArrayList(_uiState.value.historyBidder)
-        updatedBidderList.add(bidder)
-        _uiState.update{ currentState ->
-            currentState.copy(
-                historyBidder = updatedBidderList,
-                highestBidder = bidder
-            )
-        }
-    }
+                    //add to bidder collection in auction collection
+                    db.collection("auction").document(auctionId).collection("bidder")
+                        .orderBy("bidId", Query.Direction.DESCENDING)
+                        .limit(1) // Limit to 1 to get the highest document ID
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            var newBidId = 1 // Default starting ID
+
+                            // If there is at least one document, parse the last document ID and increment it
+                            if (!documents.isEmpty) {
+                                val lastDocId = documents.documents[0].id
+                                newBidId = (lastDocId.toIntOrNull() ?: 0) + 1
+                            }
+                            val bidderR = hashMapOf(
+                                "bidId" to newBidId,
+                                "name" to bidder.name,
+                                "bid amount " to bidder.bidAmount
+                            )
+
+                            val bidReference = db.collection("auction").document(auctionId)
+                            val minCall = bidder.bidAmount + (minAmount.toDoubleOrNull() ?: 0.0)
+                            bidReference
+                                .set(
+                                    hashMapOf("bidArray" to FieldValue.arrayUnion(bidderR)),
+                                    SetOptions.merge()
+                                )
+                                .addOnSuccessListener {
+                                    // Auction successfully stored
+                                    bidReference
+                                        .set(
+                                            mapOf(
+                                                "highestBidder" to bidder.name,
+                                                "highestBid" to bidder.bidAmount,
+                                                "minCall" to minCall
+                                            ), SetOptions.merge()
+                                        )
+                                        .addOnSuccessListener {
+                                            db.collection("user").document(uid)
+                                                .collection("userBidRec")
+                                                .document("userBid")
+                                                .set(
+                                                    hashMapOf(
+                                                        "bidRef" to FieldValue.arrayUnion(
+                                                            bidReference
+                                                        )
+                                                    ), SetOptions.merge()
+                                                ).addOnSuccessListener {
+                                                    val updatedBidderList = ArrayList(_uiState.value.historyBidder)
+                                                    updatedBidderList.add(bidder)
+                                                }
+                                        }
+                                    Log.d("document", "CREATED")
+                                }
+                        }
+
+
+
+//        _uiState.update{ currentState ->
+//            currentState.copy(
+//                historyBidder = updatedBidderList,
+//                highestBidder = bidder
+//            )
+//        }
+                }
+            }
         }
 //}
 
 
-
-    // Function to calculate the time left
-//    fun calculateTimeLeft(timestampString: Timestamp): Long {
-//        // Extract the seconds from the string
-////        val regex = """seconds = (\d+)""".toRegex()
-////        val matchResult = regex.find(timestampString)
-////        val seconds = matchResult?.groups?.get(1)?.value?.toLongOrNull() ?: return 0L
-//
-////        val seconds = timestampString.seconds
-//        // Convert seconds to milliseconds
-//
-//        val targetMillis = timestampString.toDate().time
-//
-//        // Get the current time in milliseconds
-//        val currentMillis = Date().time
-//
-//        // Calculate the difference in milliseconds
-//        return targetMillis - currentMillis
-//    }
-//
-//    // Function to format the time left in a readable way
-//    fun formatTimeLeft(diffInMillis: Long): String {
-//        if (diffInMillis <= 0L) return "Time's up!"
-//
-//        val hours = TimeUnit.MILLISECONDS.toHours(diffInMillis)
-//        val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis) % 60
-//        val seconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis) % 60
-//
-//        // Format with leading zeros for better readability
-//        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
-//    }
 
     fun closeListing(_auction_id: String) {
         liveAuction = false
@@ -629,62 +747,144 @@ class BidViewModel
 
     }
 
-    fun getUserHistoryArray(
-        userID: String = "0",
-        document: String = "userPost",
-        field: String = "postRef"
-    ) {
+//    fun getUserHistoryArray(
+//        document: String ,
+//        field: String
+//    ) {
+////        getUserProfile()
+//
+//
+//        val postList = mutableListOf<historyRec>()
+//        // Fetch the document containing the references
+//        db.collection("user").document(uid).collection("userBidRec")
+//            .document(document)
+//            .get()
+//            .addOnSuccessListener { documentSnapshot ->
+//                if (documentSnapshot.exists()) {
+//                    // Get the array of document references
+//                    val historyRefArray = documentSnapshot.get(field) as? List<DocumentReference>
+//
+//                    // If the array is not null, iterate over it
+//                    if (historyRefArray != null) {
+//                        for (ref in historyRefArray) {
+////                            ref.orderBy("endDate", Query.Direction.DESCENDING)
+//
+//                            // Dereference each post and fetch the data
+//                            ref.get().addOnSuccessListener { userSnapshot ->
+//                                if (userSnapshot.exists()) {
+//                                    // Create postRec from the data
+//                                    endDate = userSnapshot.getString("endDate") ?: ""
+//                                    endTime = userSnapshot.getString("endTime") ?: ""
+//
+//                                    val history = historyRec(
+//                                        id = userSnapshot.getLong("id") ?: 0L,
+//                                        name = userSnapshot.getString("name") ?: "",
+//                                        highestBid = userSnapshot.getLong("highestBid") ?: 0L,
+//                                        endDate = userSnapshot.getString("endDate") ?: "",
+//                                        endTime = userSnapshot.getString("endTime") ?: "",
+//                                        timeLeft = formatTimeLeft(
+//                                            calculateTimeLeft(
+//                                                endDate,
+//                                                endTime
+//                                            )
+//                                        ),
+//                                        live = userSnapshot.getBoolean("live") ?: false,
+//                                        imageRef = userSnapshot.get("imageRef") as? List<String>
+//                                            ?: emptyList()
+//                                    )
+//
+//                                    // Add postRec to the list
+//                                    postList.add(history)
+//                                    _uiState.update { currentState ->
+//                                        currentState.copy(
+//                                            historyRecArr = postList
+//                                        )
+//                                    }
+//                                }
+//                            }.addOnFailureListener { exception ->
+//                                println("Error getting referenced document: $exception")
+//                            }
+//
+//                        }
+//
+//                    } else {
+//                        _uiState.update { currentState ->
+//                            currentState.copy(
+//                                historyRecArr = emptyList()
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//            .addOnFailureListener { exception ->
+//                println("Error getting document: $exception")
+//            }
+//    }
+
+    fun getUserHistoryArray(document: String, field: String) {
         val postList = mutableListOf<historyRec>()
+        getCurrentUid()
         // Fetch the document containing the references
-        userFirestorePath.document(document)
+        db.collection("user").document(uid).collection("userBidRec")
+            .document(document)
             .get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
                     // Get the array of document references
                     val historyRefArray = documentSnapshot.get(field) as? List<DocumentReference>
 
-                    // If the array is not null, iterate over it
-                    if (historyRefArray != null) {
-                        for (ref in historyRefArray) {
-                            // Dereference each post and fetch the data
-                            ref.get().addOnSuccessListener { userSnapshot ->
-                                if (userSnapshot.exists()) {
-                                    // Create postRec from the data
-                                    endDate = userSnapshot.getString("endDate") ?: ""
-                                    endTime = userSnapshot.getString("endTime") ?: ""
-
-                                    val history = historyRec(
-                                        id = userSnapshot.getLong("id") ?: 0L,
-                                        name = userSnapshot.getString("name") ?: "",
-                                        highestBid = userSnapshot.getLong("highestBid") ?: 0L,
-                                        endDate = userSnapshot.getString("endDate") ?: "",
-                                        endTime = userSnapshot.getString("endTime") ?: "",
-                                        timeLeft = formatTimeLeft(
-                                            calculateTimeLeft(
-                                                endDate,
-                                                endTime
-                                            )
-                                        ),
-                                        live = userSnapshot.getBoolean("live") ?: false,
-                                        imageRef = userSnapshot.get("imageRef") as? List<String>
-                                            ?: emptyList()
-                                    )
-
-                                    // Add postRec to the list
-                                    postList.add(history)
-                                    _uiState.update { currentState ->
-                                        currentState.copy(
-                                            historyRecArr = postList
-                                        )
-                                    }
-                                }
-                            }.addOnFailureListener { exception ->
-                                println("Error getting referenced document: $exception")
-                            }
-
+                    if (!historyRefArray.isNullOrEmpty()) {
+                        val tasks = historyRefArray.map { ref ->
+                            // Fetch each referenced document
+                            ref.get()
                         }
 
+                        // When all documents are fetched
+                        Tasks.whenAllComplete(tasks).addOnSuccessListener { completedTasks ->
+                            completedTasks.forEach { task ->
+                                // Check if the task was successful
+                                if (task.isSuccessful) {
+                                    val resultSnapshot = task.result as DocumentSnapshot
+
+                                    if (resultSnapshot.exists()) {
+                                        // Extract history record from each fetched document
+                                        val history = historyRec(
+                                            id = resultSnapshot.getLong("id") ?: 0L,
+                                            name = resultSnapshot.getString("name") ?: "",
+                                            highestBid = resultSnapshot.getLong("highestBid") ?: 0L,
+                                            endDate = resultSnapshot.getString("endDate") ?: "",
+                                            endTime = resultSnapshot.getString("endTime") ?: "",
+                                            timeLeft = formatTimeLeft(
+                                                calculateTimeLeft(
+                                                    resultSnapshot.getString("endDate") ?: "",
+                                                    resultSnapshot.getString("endTime") ?: ""
+                                                )
+                                            ),
+                                            live = resultSnapshot.getBoolean("live") ?: false,
+                                            imageRef = resultSnapshot.get("imageRef") as? List<String> ?: emptyList(),
+                                            highestBidder = resultSnapshot.getString("highestBidder") ?: ""
+                                        )
+
+                                        postList.add(history)
+                                    }
+                                } else {
+                                    // Handle failed document fetches (optional logging)
+                                    Log.e("Firestore", "Error fetching document: ${task.exception}")
+                                }
+                            }
+
+                            // Sort by endDate in descending order
+                            postList.sortByDescending { it.endDate }
+                            postList.sortByDescending { it.endTime }
+                            // Update the UI state once all documents are fetched and sorted
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    historyRecArr = postList
+                                )
+                            }
+                        }
                     } else {
+                        // No references, set an empty list
                         _uiState.update { currentState ->
                             currentState.copy(
                                 historyRecArr = emptyList()
@@ -694,66 +894,26 @@ class BidViewModel
                 }
             }
             .addOnFailureListener { exception ->
-                println("Error getting document: $exception")
-            }
-    }
-
-    fun getUserPost(user: String = "test") {
-        userFirestorePath.document("userPost")
-            .get()
-            .addOnSuccessListener { documentSnapshot ->
-                val userReference = documentSnapshot.getDocumentReference("postRef")
-
-                userReference?.get()?.addOnSuccessListener { userSnapshot ->
-                    // Access data from the referenced document
-                    handleUserData(userSnapshot);
+                Log.e("Firestore", "Error getting document: $exception")
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        historyRecArr = emptyList()
+                    )
                 }
             }
     }
 
 
-    private fun handleUserData(userSnapshot: DocumentSnapshot) {
-        if (userSnapshot.exists()) {
-            val auctionName = userSnapshot.getString("name") ?: "No Name"
-            val currentBid = userSnapshot.getDouble("highestBid") ?: 0.00
-            val date = userSnapshot.getString("endDate") ?: "hh:mm am"
-            val time = userSnapshot.getString("endTime") ?: "mm/dd/yyyy"
-            val timeRemaining = calculateTimeLeft(date, time)
-            val dateTime: String = formatTimeLeft(timeRemaining)
-            // Update your UI state
-            _uiState.update { currentState ->
-                currentState.copy(
-                    title = auctionName,
-                    highestBid = currentBid,
-                    timeLeft = dateTime
-                )
-            }
-        } else {
-            Log.d("Firestore", "User document does not exist!")
-        }
-    }
 
 
-    fun checkHighestOrNot(user: String = "", auctionId: String = "0"): Boolean {
-        getAuctionById(auctionId)
-        return user == highestBidder.name
-    }
-
+fun checkHighestOrNot(highestBidder: String): Boolean {
+    getCurrentUid()
+    return uid == highestBidder
 }
 
-//fun updateBid(){
-//        val auction = hashMapOf(
-//            "id" to 3,
-//            "name" to title,
-//            "basePrice" to startBidAmount,
-//            "minBid" to minBidAmount,
-//            "endTimestamp" to timeStamp,
-//            "minCall" to startBidAmount + minBidAmount
-//        )
-//        db.collection("cars")
-//            .document("")
-//            .set(auction)
-//            .addOnSuccessListener {
-//                Log.d("document", "CREATED")
-//            }
-//    }
+    private fun getCurrentUid(){
+        uid = firebaseAuth.currentUser?.uid ?: return
+    }
+
+
+}

@@ -1,14 +1,14 @@
 <resources>
-    <string name="app_name">TaylorSwiftApplication</string>
+    <string name="app_name">TaylorSwitchApplication</string>
     <string name="trade">Trade</string>
     <string name="bid">Bid</string>
     <string name="bid_history">Bid History</string>
     <string name="title">Title: %s</string>
     <string name="your_bid">Your Bid : %s</string>
-    <string name="highest">Highest  : %s</string>
+    <string name="highest">Highest  : %4.2f</string>
     <string name="endDate">End Date  : %s</string>
     <string name="endTime">End Time  : %s</string>
-    <string name="timeLeft">TimeLeft  : %s</string>
+<!--    <string name="timeLeftFormat">TimeLeft  : %s</string>-->
     <string name="live">Live</string>
     <string name="back_button">Back</string>
     <string name="end">End</string>
@@ -20,5 +20,6 @@
     <string name="open">Open</string>
     <string name="closed">Closed</string>
     <string name="signup">Sign Up</string>
-
+    <string name="MoneyShow">RM %4.2f</string>
+<!--    <string name="timeLeftFormat">%2s:%2s:%2s</string>-->
 </resources>

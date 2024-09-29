@@ -52,7 +52,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
@@ -73,18 +73,7 @@ fun EditProfileScreen(
         }
     }
     val uiState = viewModel.uiState
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Edit Profile") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -181,7 +170,7 @@ fun EditProfileScreen(
             }
         }
     }
-}
+
 
 //@Composable
 //fun EditableProfileField(

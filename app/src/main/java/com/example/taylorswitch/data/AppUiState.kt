@@ -1,16 +1,28 @@
 package com.example.taylorswitch.data
 
-//data class AppUiState(
-//    val endDate: String = "",
-//    val minBidAmount: Double = 0.0,
-//    val startBidAmount: Double = 0.0,
-//    val title: String = "",
-//    val description: String = " ",
-//    val poster: String = " ",
-//    val live: Boolean = false,
-//    val success: Boolean = false,
-//    val highestBidder: Bidder = Bidder("",0.0),
-//    val historyBidder: List<Bidder> = emptyList(),
-//    val stage: ListingStage = ListingStage.Live
-//
-//)
+import androidx.compose.ui.graphics.vector.ImageVector
+
+data class TabBarItem(
+    val title: String,
+    val path: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
+    val badgeAmount: Int? = null
+)
+
+data class TopBarItem(
+    val canNavigateBack: Boolean,
+    val title: String,
+
+    )
+
+data class MiniFabItems(
+    val icon: ImageVector,
+    val title: String,
+    val route: String
+)
+
+data class AppUiState(
+    val uid: String = "",
+    val username: String = ""
+)

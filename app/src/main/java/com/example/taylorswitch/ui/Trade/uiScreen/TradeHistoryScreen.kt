@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.tradeHistory
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 
@@ -45,21 +46,6 @@ fun TradeHistoryScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> 
     LaunchedEffect(Unit) {
         tradeViewModel.getUserHistoryArray("0", "userPost", "postTradeRef")
     }
-    Scaffold (
-        topBar = {
-            TopAppBar(
-                title = { Text("Trade History") },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back"
-                        )
-                    }
-                }
-            )
-        }
-    ){
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
@@ -71,21 +57,21 @@ fun TradeHistoryScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> 
                     imageRef = tradeHistoryRec.imageRef.get(0),
                     id = tradeHistoryRec.id.toString(),
                     title = tradeHistoryRec.title,
-                    tradeEnd = tradeHistoryRec.tradeEnd,
                     onClickStartSource = {
+                        navController.navigate(route = TaylorSwitchScreen.ReviewTrade.name+"/${tradeHistoryRec.id.toInt()}")
                         tradeViewModel.getTradeById((tradeHistoryRec.id.toInt()).toString())
                     },
-                    isOpen = tradeHistoryRec.isOpen,
+                    isOpen = tradeHistoryRec.live,
                     win = tradeViewModel.checkWinOrNot(user = "test", tradeId = tradeHistoryRec.id.toString())
                 )
             }
         }
     }
-}
+
 
 @Composable
 fun ListItem(
-    imageRef: String = "", id: String = "", title:String, tradeEnd: Boolean = false,onClickStartSource: () -> Unit, isOpen: Boolean = false, win: Boolean = false
+    imageRef: String = "", id: String = "", title:String, onClickStartSource: () -> Unit, isOpen: Boolean = false, win: Boolean = false
 ){
     Row(){
         if (imageRef != ""){

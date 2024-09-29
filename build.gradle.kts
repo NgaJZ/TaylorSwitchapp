@@ -9,7 +9,7 @@ buildscript {
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
-
+    id("androidx.room") version "2.6.0" apply false
 //    alias(libs.plugins.google.devtools.ksp) apply false
 //    id("com.android.application") version "8.6.0" apply false
 //    id("com.android.library") version "8.6.0" apply false
@@ -17,7 +17,7 @@ plugins {
 //    id("com.google.gms.google-services") version "4.4.2" apply false
 
 }
-//
-//tasks.register("clean", Delete:: class){
+
+//tasks.register("clean", Delete::class) {
 //    delete(rootProject.buildDir)
 //}
