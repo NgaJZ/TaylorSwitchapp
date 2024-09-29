@@ -1,5 +1,6 @@
 package com.example.taylorswitch.data.localDatabase
 
+import androidx.lifecycle.LifecycleOwner
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.taylorswitch.data.TradeStatus
@@ -12,5 +13,6 @@ data class TradePostLocal (
     val description: String,
     val category: String,
     val imageUris: List<String>,
-    val live: Boolean = false
+    val live: Boolean = false,
+    val owner: String = ""
 )

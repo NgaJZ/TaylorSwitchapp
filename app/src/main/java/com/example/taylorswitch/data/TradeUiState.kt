@@ -1,5 +1,7 @@
 package com.example.taylorswitch.data
 
+import android.net.Uri
+
 enum class Listing {
     Open,
     Closed
@@ -22,12 +24,12 @@ data class TradeUiState(
     val description: String = "",
     val category: String = "",
     val owner: String = "",
-    val tradeItem: List<String> = emptyList(),
     val trader: String = "",
+    val tradeItem: List<String> = emptyList(),
     val live: Boolean = false,
-    val win:Boolean = false,
     val stage: Listing = Listing.Open,
     val tradeStatus: TradeStatus = TradeStatus.Pending,
     val tradeHistoryArr: List<tradeHistory> = emptyList(),
-    val imageRef: List<String> = emptyList()
+    val imageRef: List<String> = emptyList(),
+    val imageUris: List<Uri> = emptyList()
 )

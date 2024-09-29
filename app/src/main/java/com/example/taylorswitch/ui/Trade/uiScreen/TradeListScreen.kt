@@ -61,7 +61,7 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
                     id = tradePostRec.id.toString(),
                     title = tradePostRec.title,
                     onClickStartSource = {
-                        navController.navigate(TaylorSwitchScreen.RequestTrade.name+"/${tradePostRec.id.toInt()}")
+                        navController.navigate(TaylorSwitchScreen.ReviewTrade.name+"/${tradePostRec.id.toInt()}")
                         tradeViewModel.getTradeById((tradePostRec.id.toInt()).toString())
                     },
                     isOpen = tradePostRec.live
