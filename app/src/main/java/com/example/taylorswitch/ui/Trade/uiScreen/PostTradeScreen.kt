@@ -57,11 +57,11 @@ import com.example.taylorswitch.data.rememberWindowSize
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostTradeItemScreen(
     tradeViewModel: TradeViewModel = viewModel(),
-    onPostButtonClicked: () -> Unit
+    onPostButtonClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit
 ){
     LaunchedEffect(Unit) {
         tradeViewModel.resetUiState()
@@ -227,12 +227,7 @@ fun PostTradeItemScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = {
-                        onPostButtonClicked
-                        run {
-                            tradeViewModel.resetPosting()
-                        }
-                    },
+                    onClick = onCancelButtonClicked,
                     enabled = true,
                     colors = ButtonDefaults.buttonColors(Color.Gray),
                     modifier = Modifier
@@ -402,12 +397,7 @@ fun PostTradeItemScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Button(
-                        onClick = {
-                            onPostButtonClicked
-                            run {
-                                tradeViewModel.resetPosting()
-                            }
-                        },
+                        onClick = onCancelButtonClicked,
                         enabled = true,
                         colors = ButtonDefaults.buttonColors(Color.Gray),
                         modifier = Modifier

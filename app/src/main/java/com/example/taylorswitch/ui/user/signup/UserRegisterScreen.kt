@@ -1,4 +1,5 @@
 package com.example.taylorswitch.ui.user.signup
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,6 +25,7 @@ import androidx.navigation.NavController
 import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 
+@SuppressLint("SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(viewModel: UserViewModel, navController: NavController) {

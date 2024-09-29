@@ -38,6 +38,8 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.PostAdd
 import androidx.compose.material.icons.outlined.SyncAlt
+import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.SyncAlt
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -94,19 +96,25 @@ import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
+import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
+import com.example.taylorswitch.ui.user.profile.TopUpScreen
+import com.example.taylorswitch.ui.user.profile.WalletScreen
 import kotlinx.coroutines.launch
 
 enum class TaylorSwitchScreen() {
     LoginPage,
     SignUpPage,
+    EditProfilePage,
+    WalletPage,
+    TopUpScreen,
+    MainPage,
     BidMainPage,
     ViewBid,
     PostBid,
     BidRecord,
     BidPost,
     Test,
-    EditProfilePage,
     PostTrade,
     TradeHomePage,
     RequestTrade,
@@ -126,6 +134,8 @@ fun TaylorSwitchApp(
     userLoginViewModel: UserLoginViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
     userProfileViewModel: UserProfileViewModel = viewModel(),
+    walletViewModel: WalletViewModel = viewModel(),
+    topUpViewModel: TopUpViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -212,6 +222,19 @@ fun TaylorSwitchApp(
                             Text(text = appUiState.username, fontSize = 15.sp)
                         }
                     }
+
+                NavigationDrawerItem(
+                    label = { Text("My Wallet") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.WalletPage.name)
+                    }
+                )
                     Column() {
 
                         Text("Bid History", modifier = Modifier.padding(16.dp))
@@ -350,30 +373,6 @@ fun TaylorSwitchApp(
                         }
                         )
                         NavigationDrawerItem(
-                            label = { Text("Request Trade") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.RequestTrade.name)
-                            }
-                        )
-                        NavigationDrawerItem(
-                            label = { Text("Review Trade") },
-                            selected = false,
-                            onClick = {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                                navController.navigate(TaylorSwitchScreen.ReviewTrade.name)
-                            }
-                        )
-                        NavigationDrawerItem(
                             label = { Text("Trade List") },
                             selected = false,
                             onClick = {
@@ -455,6 +454,84 @@ fun TaylorSwitchApp(
                                 }
                             }
                         )
+                    }else if(currentDestination == TaylorSwitchScreen.TradeHomePage.name){
+                        TaylorSwitchAppBar(
+                            title = "Taylor Switch",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.PostTrade.name){
+                        TaylorSwitchAppBar(
+                            title = "Post Trade",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.RequestTrade.name + "/{auctionId}"){
+                        TaylorSwitchAppBar(
+                            title = "Trade",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.ReviewTrade.name + "/{auctionId}"){
+                        TaylorSwitchAppBar(
+                            title = "Trade",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.TradeList.name){
+                        TaylorSwitchAppBar(
+                            title = "Trade List",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
+                    }else if(currentDestination == TaylorSwitchScreen.TradeHistory.name){
+                        TaylorSwitchAppBar(
+                            title = "Trade Record",
+                            canNavigateBack = false,
+                            navigateUp = {},
+                            onNavigationIconClick = {
+                                scope.launch {
+                                    drawerState.apply {
+                                        if (isClosed) open() else close()
+                                    }
+                                }
+                            }
+                        )
                     }
                     else {
                         TaylorSwitchAppBar(
@@ -523,7 +600,7 @@ fun TaylorSwitchApp(
 //                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
-//                            bidUiState = uiState,
+                            bidUiState = uiState,
                             bidViewModel = bidViewModel,
                             navController = navController
                         )
@@ -552,9 +629,9 @@ fun TaylorSwitchApp(
 //                    MultiplePhotoPicker()
 //                        SignUpScreen(userViewModel, navController)
                     }
-//                    composable(TaylorSwitchScreen.PostTrade.name){
-//                        PostTradeItemScreen(tradeViewModel,{})
-//                    }
+                    composable(TaylorSwitchScreen.PostTrade.name){
+                        PostTradeItemScreen(tradeViewModel,{})
+                    }
                     composable(TaylorSwitchScreen.LoginPage.name) {
                         LoginScreen(
                             viewModel = userLoginViewModel,
@@ -584,7 +661,14 @@ fun TaylorSwitchApp(
                     composable(TaylorSwitchScreen.PostTrade.name) {
                         PostTradeItemScreen(
                             tradeViewModel = tradeViewModel,
-                            onPostButtonClicked = { tradeViewModel.postTrade(context = context) }
+                            onPostButtonClicked = {
+                                tradeViewModel.postTrade(owner = appUiState.uid, context = context)
+                                navController.navigate(TaylorSwitchScreen.TradeHomePage.name)
+                                                  },
+                            onCancelButtonClicked = {
+                                tradeViewModel.resetPosting()
+                                navController.navigate(TaylorSwitchScreen.TradeHomePage.name)
+                            }
                         )
                     }
                     composable(TaylorSwitchScreen.RequestTrade.name + "/{tradeId}") { backStackEntry ->
@@ -600,12 +684,14 @@ fun TaylorSwitchApp(
                     composable(TaylorSwitchScreen.ReviewTrade.name + "/{tradeId}") { backStackEntry ->
                         val tradeId = backStackEntry.arguments?.getString("tradeId")
                         tradeViewModel.getTradeById("$tradeId")
-                        ReviewTradeRequest(
-                            tradeId = tradeId,
-                            tradeUiState = tUiState,
-                            tradeViewModel = tradeViewModel,
-                            navController = navController
-                        )
+                        if (tradeId != null) {
+                            ReviewTradeRequest(
+                                tradeId = tradeId,
+                                tradeUiState = tUiState,
+                                tradeViewModel = tradeViewModel,
+                                navController = navController
+                            )
+                        }
                     }
                     composable(TaylorSwitchScreen.TradeList.name) {
                         tradeViewModel.getUserHistoryArray("userPost", "postRef")
@@ -672,21 +758,48 @@ fun TaylorSwitchApp(
                             navController = navController
                         )
                     }
-                    composable(TaylorSwitchScreen.SignUpPage.name) {
+
+                    composable(TaylorSwitchScreen.SignUpPage.name){
                         SignUpScreen(
-                            viewModel = userViewModel,
+                            viewModel =  userViewModel,
                             navController = navController,
 //                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
 //                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
                         )
                     }
-
+                    composable(TaylorSwitchScreen.EditProfilePage.name){
+                        EditProfileScreen(
+                            viewModel =  userProfileViewModel,
+                            onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+                    composable(TaylorSwitchScreen.WalletPage.name){
+                        WalletScreen(
+                            viewModel =  walletViewModel,
+                            //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            navController = navController,
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+                            onTopUpClick = {navController.navigate(TaylorSwitchScreen.TopUpScreen.name)}         // Function to handle "Sign Up" navigation
+                        )
+                    }
+                    composable(TaylorSwitchScreen.WalletPage.name){
+                        TopUpScreen(
+                            viewModel =  topUpViewModel,
+                            //currentBalance = topUpViewModel.topUp(currentBalance).toString(),
+                            //onBackClick = {navController.navigate(TaylorSwitchScreen.MainPage.name)},
+                            navController = navController
+//                        onForgotPasswordClick= {},  // Function to handle "Forgot Password" click
+//                        onSignUpClick = {}         // Function to handle "Sign Up" navigation
+                        )
+                    }
                     }
                 }
 
+            }
         }
-
-    }
 
 
 

@@ -35,7 +35,7 @@ fun LoginScreen(
     navController: NavController,
     onSignUpClick: () -> Unit
 //    onForgotPasswordClick: () -> Unit,  // Function to handle "Forgot Password" click
-             // Function to handle "Sign Up" navigation
+    // Function to handle "Sign Up" navigation
 ) {
 
     val uiState = viewModel.uiState

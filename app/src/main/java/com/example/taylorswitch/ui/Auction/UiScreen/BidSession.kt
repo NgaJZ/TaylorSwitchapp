@@ -342,7 +342,7 @@ fun BidSessionPortrait(
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.MoneyShow,
-                        ((bidUiState.highestBidder).bidAmount)),
+                            ((bidUiState.highestBidder).bidAmount)),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -609,7 +609,7 @@ fun BidSessionLandscape(
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.MoneyShow,
-                        bidUiState.startBidAmount),
+                            bidUiState.startBidAmount),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -637,7 +637,7 @@ fun BidSessionLandscape(
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.MoneyShow,
-                        bidUiState.minCallUp),
+                            bidUiState.minCallUp),
                         style = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 19.6.sp,
@@ -748,7 +748,7 @@ fun BidSessionLandscape(
                     label = {
                         if (bidViewModel.isCallNotValid()) {
                             Text("Error",
-                            color = Color(red = 255, green = 0, blue = 0))
+                                color = Color(red = 255, green = 0, blue = 0))
                         } else {
                             Text("Bid")
                         }

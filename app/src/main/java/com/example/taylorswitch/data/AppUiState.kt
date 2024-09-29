@@ -12,9 +12,9 @@ data class TabBarItem(
 
 data class TopBarItem(
     val canNavigateBack: Boolean,
-     val title: String,
+    val title: String,
 
-)
+    )
 
 data class MiniFabItems(
     val icon: ImageVector,
