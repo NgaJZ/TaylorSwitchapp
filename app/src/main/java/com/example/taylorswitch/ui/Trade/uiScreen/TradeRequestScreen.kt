@@ -162,7 +162,7 @@ fun TradeRequestScreenPortrait(
                             contentScale = ContentScale.FillBounds
                         )
                         Text(
-                            text = tradeUiState.owner,
+                            text = tradeUiState.ownerName,
                             style = TextStyle(
                                 fontSize = 16.sp,
                                 lineHeight = 24.sp,
@@ -388,7 +388,7 @@ fun TradeRequestScreenLandscape(
                             contentScale = ContentScale.FillBounds
                         )
                         Text(
-                            text = tradeUiState.owner,
+                            text = tradeUiState.ownerName,
                             style = TextStyle(
                                 fontSize = 16.sp,
                                 lineHeight = 24.sp,

@@ -36,5 +36,6 @@ data class TradeUiState(
     val tradeStatus: TradeStatus = TradeStatus.Pending,
     val tradeHistoryArr: List<tradeHistory> = emptyList(),
     val imageRef: List<String> = emptyList(),
-    val imageUris: List<Uri> = emptyList()
+    val imageUris: List<Uri> = emptyList(),
+    val ownerName: String = ""
 )

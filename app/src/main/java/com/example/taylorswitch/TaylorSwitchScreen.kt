@@ -67,7 +67,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,13 +77,11 @@ import com.example.taylorswitch.ui.theme.TaylorSwitchTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import coil.compose.rememberImagePainter
 import com.example.taylorswitch.data.MiniFabItems
 import com.example.taylorswitch.data.TabBarItem
 import com.example.taylorswitch.data.TopBarItem
 import com.example.taylorswitch.ui.Auction.UiScreen.BidHistoryScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.BidSession
-
 import com.example.taylorswitch.ui.Auction.Viewmodel.BidViewModel
 import com.example.taylorswitch.ui.Auction.UiScreen.HomeScreen
 import com.example.taylorswitch.ui.Auction.UiScreen.PostHistoryScreen
@@ -96,11 +93,12 @@ import com.example.taylorswitch.ui.Trade.uiScreen.ReviewTradeRequest
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeHistoryScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeListScreen
 import com.example.taylorswitch.ui.Trade.uiScreen.TradeRequestScreen
-import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserLoginViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserViewModel
 import com.example.taylorswitch.ui.user.login.LoginScreen
 import com.example.taylorswitch.ui.user.signup.SignUpScreen
+import com.example.taylorswitch.ui.theme.AppViewModelProvider
+import com.example.taylorswitch.ui.user.UserViewmodel.TopUpViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.UserProfileViewModel
 import com.example.taylorswitch.ui.user.UserViewmodel.WalletViewModel
 import com.example.taylorswitch.ui.user.profile.EditProfileScreen
@@ -134,7 +132,7 @@ enum class TaylorSwitchScreen() {
 @Composable
 fun TaylorSwitchApp(
     bidViewModel: BidViewModel = viewModel(
-        factory = AppViewModelProvider.Factory
+//        factory = AppViewModelProvider.Factory
     ),
     tradeViewModel: TradeViewModel = viewModel(),
     userLoginViewModel: UserLoginViewModel = viewModel(),
@@ -153,7 +151,7 @@ fun TaylorSwitchApp(
 
     val tradeTab = TabBarItem(
         title = "Trade",
-        path = TaylorSwitchScreen.TradeHomePage.name,
+        path = TaylorSwitchScreen.PostBid.name,
         selectedIcon = Icons.Filled.SyncAlt,
         unselectedIcon = Icons.Outlined.SyncAlt
     )
@@ -187,8 +185,12 @@ fun TaylorSwitchApp(
         title = "Taylor Switch"
     )
 
+
+//    val histor
+
+
     // creating a list of all the tabs
-    val tabBarItems = listOf(bidTab, tradeTab)
+    val tabBarItems = listOf(tradeTab, bidTab)
     val bidBarItems = listOf(bidRTab, bidPTab)
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -217,23 +219,30 @@ fun TaylorSwitchApp(
                                 .padding(start = 10.dp),
                             verticalArrangement = Arrangement.Center
                         ) {
-                            if(appUiState.userImage != ""){
-                                Image(
-                                    painter = rememberImagePainter(data = appUiState.userImage),
-                                    contentDescription = "user"
-                                )
-                            }else {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                                    contentDescription = "user"
-                                )
-                            }
-                            Text(text = appUiState.username, fontSize = 15.sp, fontWeight = FontWeight(400))
+                            Image(
+                                painter = painterResource(R.drawable.ic_launcher_foreground),
+                                contentDescription = "user"
+                            )
+                            Text(text = appUiState.username, fontSize = 15.sp)
                         }
                     }
 
-
+                NavigationDrawerItem(
+                    label = { Text("My Wallet") },
+                    selected = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                        navController.navigate(TaylorSwitchScreen.WalletPage.name)
+                    }
+                )
                     Column() {
+
+                        Text("Bid History", modifier = Modifier.padding(16.dp))
+                        HorizontalDivider()
                         NavigationDrawerItem(
                             icon = {
                                 Icon(
@@ -506,7 +515,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 bottomBar = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
                         TaylorSwitchBottomBar(
                             tabBarItems = tabBarItems,
                             navController = navController
@@ -519,7 +528,7 @@ fun TaylorSwitchApp(
                     }
                 },
                 floatingActionButton = {
-                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name || currentDestination == TaylorSwitchScreen.TradeHomePage.name) {
+                    if (currentDestination == TaylorSwitchScreen.BidMainPage.name) {
                         MainUI(navController = navController)
                     }
                 }
@@ -563,6 +572,7 @@ fun TaylorSwitchApp(
 //                        bidViewModel.getAuctionById("$auctionId")
                         BidSession(
                             auctionId = auctionId,
+                            bidUiState = uiState,
                             bidViewModel = bidViewModel,
                             navController = navController
                         )
@@ -591,7 +601,6 @@ fun TaylorSwitchApp(
 //                    MultiplePhotoPicker()
 //                        SignUpScreen(userViewModel, navController)
                     }
-
                     composable(TaylorSwitchScreen.LoginPage.name) {
                         LoginScreen(
                             viewModel = userLoginViewModel,
