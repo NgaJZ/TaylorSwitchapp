@@ -50,9 +50,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
@@ -63,57 +66,39 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 fun TradeRequestScreen(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel = viewModel(),
+    navController: NavHostController
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
         WindowType.SMALL -> TradeRequestScreenPortrait(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
         else -> TradeRequestScreenLandscape(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TradeRequestScreenPortrait(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.tradeItemUris = it }
     )
-    Scaffold(
-        modifier = Modifier
-            .border(width = 8.dp, color = Color(0xFFCAC4D0))
-            .padding(8.dp)
-            .width(412.dp)
-            .height(826.dp)
-            .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(28.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("Trade", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back",
-                            tint = Color.Black
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         Column (
             modifier = Modifier
                 .fillMaxSize(),
@@ -273,7 +258,10 @@ fun TradeRequestScreenPortrait(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -288,7 +276,10 @@ fun TradeRequestScreenPortrait(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = false
                         ) {
@@ -306,42 +297,21 @@ fun TradeRequestScreenPortrait(
             }
         }
     }
-}
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TradeRequestScreenLandscape(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val lazyListState = rememberLazyListState()
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.tradeItemUris = it }
     )
-    Scaffold(
-        modifier = Modifier
-            .border(width = 8.dp, color = Color(0xFFCAC4D0))
-            .padding(8.dp)
-            .width(412.dp)
-            .height(826.dp)
-            .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(28.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("Review Trade", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back",
-                            tint = Color.Black
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         Row (
             modifier = Modifier
                 .fillMaxSize()
@@ -516,7 +486,10 @@ fun TradeRequestScreenLandscape(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                            },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -531,7 +504,10 @@ fun TradeRequestScreenLandscape(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.callTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeHistory.name)
+                            },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = false
                         ) {
@@ -549,7 +525,7 @@ fun TradeRequestScreenLandscape(
             }
         }
     }
-}
+
 @Composable
 fun ImageCardTR(imageUrl: String, modifier: Modifier) {
     Card(

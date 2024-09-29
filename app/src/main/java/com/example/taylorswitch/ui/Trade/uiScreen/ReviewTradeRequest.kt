@@ -50,9 +50,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchApp
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.TradeUiState
 import com.example.taylorswitch.data.WindowType
 import com.example.taylorswitch.data.rememberWindowSize
@@ -63,57 +67,39 @@ import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 fun ReviewTradeRequest(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel = viewModel(),
+    navController: NavHostController
 ) {
     val windowSize = rememberWindowSize()
     when (windowSize.width){
         WindowType.SMALL -> ReviewTradeRequestPortrait(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
         else -> ReviewTradeRequestLandscape(
             tradeId = tradeId,
             tradeUiState = tradeUiState,
-            tradeViewModel = tradeViewModel
+            tradeViewModel = tradeViewModel,
+            navController = navController
         )
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestPortrait(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.imageUris = it }
     )
-    Scaffold(
-        modifier = Modifier
-            .border(width = 8.dp, color = Color(0xFFCAC4D0))
-            .padding(8.dp)
-            .width(412.dp)
-            .height(826.dp)
-            .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(28.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("Review Trade", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back",
-                            tint = Color.Black
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         Column (
             modifier = Modifier
                 .fillMaxSize(),
@@ -255,12 +241,36 @@ fun ReviewTradeRequestPortrait(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -270,12 +280,36 @@ fun ReviewTradeRequestPortrait(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -288,42 +322,21 @@ fun ReviewTradeRequestPortrait(
             }
         }
     }
-}
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SuspiciousIndentation")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewTradeRequestLandscape(
     tradeId: String?,
     tradeUiState: TradeUiState,
-    tradeViewModel: TradeViewModel
+    tradeViewModel: TradeViewModel,
+    navController: NavHostController
 ){
     val lazyListState = rememberLazyListState()
     val multiplePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = { tradeViewModel.imageUris = it }
     )
-    Scaffold(
-        modifier = Modifier
-            .border(width = 8.dp, color = Color(0xFFCAC4D0))
-            .padding(8.dp)
-            .width(412.dp)
-            .height(826.dp)
-            .background(color = Color(0xFFFFFFFF), shape = RoundedCornerShape(28.dp)),
-        topBar = {
-            TopAppBar(
-                title = { Text("Review Trade", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back",
-                            tint = Color.Black
-                        )
-                    }
-                }
-            )
-        }
-    ) {
         Row (
             modifier = Modifier
                 .fillMaxSize()
@@ -479,7 +492,10 @@ fun ReviewTradeRequestLandscape(
                 ){
                     if (tradeUiState.isOpen){
                         Button(
-                            onClick = { tradeViewModel.rejectTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -497,7 +513,10 @@ fun ReviewTradeRequestLandscape(
                                 .padding(0.dp)
                                 .width(100.dp)
                                 .height(44.dp),
-                            onClick = { tradeViewModel.acceptTrade(tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
                             enabled = true
                         ) {
@@ -512,12 +531,36 @@ fun ReviewTradeRequestLandscape(
                         }
                     }else{
                         Button(
-                            onClick = { tradeViewModel.callTrade(tradeId = tradeId.toString())},
+                            onClick = {
+                                tradeViewModel.rejectTrade(tradeId = tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
                             shape = RoundedCornerShape(size = 8.dp),
-                            enabled = false
+                            enabled = true
                         ) {
                             Text(
-                                text = "Trade",
+                                text = "Reject",
+                                style = TextStyle(
+                                    fontSize = 13.sp,
+                                    lineHeight = 16.sp,
+                                    fontWeight = FontWeight(800)
+                                )
+                            )
+                        }
+                        Button(
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .width(100.dp)
+                                .height(44.dp),
+                            onClick = {
+                                tradeViewModel.acceptTrade(tradeId.toString())
+                                navController.navigate(TaylorSwitchScreen.TradeList.name)
+                                      },
+                            shape = RoundedCornerShape(size = 8.dp),
+                            enabled = true
+                        ) {
+                            Text(
+                                text = "Accept",
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 16.sp,
@@ -530,26 +573,10 @@ fun ReviewTradeRequestLandscape(
             }
         }
     }
-}
-//@Composable
-//fun ImageCardTR(imageUrl: String, modifier: Modifier) {
-//    Card(
-//        modifier = Modifier
-//            .width(380.dp)
-//            .fillMaxHeight(), // Keep height same for square images
-//        shape = RoundedCornerShape(8.dp)
-//    ) {
-//        // Coil to load image from URL
-//        Image(
-//            painter = rememberImagePainter(data = imageUrl),
-//            contentDescription = null,
-//            contentScale = ContentScale.Crop,
-//            modifier = Modifier.fillMaxSize()
-//        )
-//    }
-//}
+
+
 //@Preview
 //@Composable
 //fun TradeRequestPreview() {
-//    ReviewTradeRequestScreen()
+//    ReviewTradeRequest()
 //}

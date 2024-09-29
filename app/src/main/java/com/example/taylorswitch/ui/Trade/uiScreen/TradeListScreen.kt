@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.taylorswitch.R
+import com.example.taylorswitch.TaylorSwitchScreen
 import com.example.taylorswitch.data.tradeHistory
 import com.example.taylorswitch.ui.Trade.ViewModel.TradeViewModel
 import okio.Source
@@ -50,21 +51,6 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
     LaunchedEffect(Unit) {
         tradeViewModel.getUserHistoryArray("0", "userPost", "postTradeRef")
     }
-    Scaffold (
-        topBar = {
-            TopAppBar(
-                title = { Text("Trade List") },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "navigate back"
-                        )
-                    }
-                }
-            )
-        }
-    ){
         LazyColumn (
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -76,6 +62,7 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
                     title = tradePostRec.title,
                     tradeEnd = tradePostRec.tradeEnd,
                     onClickStartSource = {
+                        navController.navigate(TaylorSwitchScreen.RequestTrade.name+"/${tradePostRec.id.toInt()}")
                         tradeViewModel.getTradeById((tradePostRec.id.toInt()).toString())
                     },
                     isOpen = tradePostRec.isOpen
@@ -83,7 +70,6 @@ fun TradeListScreen(tradeViewModel: TradeViewModel, list: List<tradeHistory> = e
             }
         }
     }
-}
 
 @Composable
 private fun ListPosting(

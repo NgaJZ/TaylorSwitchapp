@@ -31,8 +31,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class TradeViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(TradeUiState())
-    val uiState: StateFlow<TradeUiState> = _uiState.asStateFlow()
+    private val _tUiState = MutableStateFlow(TradeUiState())
+    val tUiState: StateFlow<TradeUiState> = _tUiState.asStateFlow()
 
     var title by mutableStateOf("")
     var description by mutableStateOf("")
@@ -112,7 +112,7 @@ class TradeViewModel : ViewModel() {
             tradeStatus = tradeData.tradeStatus
             imageRef = tradeData.imageRef
         }
-        _uiState.update { currentState ->
+        _tUiState.update { currentState ->
             currentState.copy(
                 title = title,
                 description = description,
@@ -127,18 +127,38 @@ class TradeViewModel : ViewModel() {
 
     fun updateListingTitle(ListingTitle: String){
         title = ListingTitle
+        _tUiState.update { currentState ->
+            currentState.copy(
+                title = title
+            )
+        }
     }
 
     fun updateListingDescription(ListingDescription: String){
         description = ListingDescription
+        _tUiState.update { currentState ->
+            currentState.copy(
+                description = description
+            )
+        }
     }
 
     fun updateCategory(ListingCategory: String){
         category = ListingCategory
+        _tUiState.update { currentState ->
+            currentState.copy(
+                category = category
+            )
+        }
     }
 
     fun updateTrader(name: String, tradeItem: String){
         trader = Trader(name, tradeItem)
+        _tUiState.update { currentState ->
+            currentState.copy(
+                trader = trader
+            )
+        }
     }
 
     fun postTrade(context: Context){
@@ -166,7 +186,7 @@ class TradeViewModel : ViewModel() {
 
                     postReference.set(trade).addOnSuccessListener {
                         imageUris.forEach { uri ->
-                            uri?.let {
+                            uri.let {
                                 StorageUtil.uploadToStorage(
                                     uri = it,
                                     context = context,
@@ -207,7 +227,7 @@ class TradeViewModel : ViewModel() {
     }
 
     fun resetUiState(){
-        _uiState.update { currentState ->
+        _tUiState.update { currentState ->
             currentState.copy(
                 title = "",
                 description = "",
@@ -249,7 +269,7 @@ class TradeViewModel : ViewModel() {
                                         imageRef = userSnapshot.get("imageRef") as? List<String> ?:emptyList()
                                     )
                                     postList.add(history)
-                                    _uiState.update { currentState ->
+                                    _tUiState.update { currentState ->
                                         currentState.copy(
                                             tradeHistoryArr = postList
                                         )
@@ -260,7 +280,7 @@ class TradeViewModel : ViewModel() {
                             }
                         }
                     }else{
-                        _uiState.update { currentState ->
+                        _tUiState.update { currentState ->
                             currentState.copy(
                                 tradeHistoryArr = emptyList()
                             )
@@ -288,7 +308,7 @@ class TradeViewModel : ViewModel() {
             val itemDescription = userSnapshot.getString("description") ?: "No Description"
             val itemCategory = userSnapshot.getString("category") ?: "No category"
 
-            _uiState.update { currentState ->
+            _tUiState.update { currentState ->
                 currentState.copy(
                     title = tradeItemTitle,
                     description = itemDescription,
@@ -313,7 +333,7 @@ class TradeViewModel : ViewModel() {
             isOpen = tradeData.isOpen
         }
         if(isOpen){
-            _uiState.update { currentState ->
+            _tUiState.update { currentState ->
                 currentState.copy(
                     trader = trader
                 )
@@ -369,7 +389,7 @@ class TradeViewModel : ViewModel() {
         }
     }
     fun rejectTrade(tradeId: String){
-        _uiState.update { currentState ->
+        _tUiState.update { currentState ->
             currentState.copy(
                 tradeStatus = TradeStatus.Rejected
             )
@@ -380,7 +400,7 @@ class TradeViewModel : ViewModel() {
             .addOnFailureListener { e -> Log.w(TAG, "Error updating document", e) }
     }
     fun acceptTrade(tradeId: String){
-        _uiState.update { currentState ->
+        _tUiState.update { currentState ->
             currentState.copy(
                 tradeStatus = TradeStatus.Accepted
             )
@@ -390,4 +410,5 @@ class TradeViewModel : ViewModel() {
             .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully") }
             .addOnFailureListener { e -> Log.w(TAG, "Error updating document", e) }
     }
+
 }
